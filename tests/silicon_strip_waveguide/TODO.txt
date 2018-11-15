@@ -1,0 +1,10 @@
+
+Calculates the data from Fig. 3 in Dulkeith et al., "Group index and
+group velocity dispersion in silicon-on-insulator photonic wires",
+Opt. Express, vol. 14, no. 9 (2006).
+
+Run it like this:
+
+>> m00_config
+>> m05_calc_neffs
+>> m10_eval

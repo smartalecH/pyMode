@@ -1,0 +1,5 @@
+
+bendit.m: traces the TE and TM modes of disk resonator.
+
+ausw.m: compares the result to the results reported in Prkna's paper.
+

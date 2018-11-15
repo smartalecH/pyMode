@@ -1,0 +1,14 @@
+#
+# 'disk microresonator' from Table II / Figs. 3+4 of:
+#
+# Prkna et al., "Field Modeling of Circular Microresonators by Film
+# Mode Matching", IEEE J. Sel. Top. Quantum Electron., vol. 11, no. 1,
+# Jan/Feb 2005.
+#
+n 1.0
+l 1.0   1.596   -100 1   0 1
+l 1.0   1.596      0 1   0 0
+l 1.0   1.45       0 0 100 0
+l 1.596 1.45  -100 0   0 0
+C -3 0 0 1
+x

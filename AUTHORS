@@ -1,0 +1,26 @@
+
+wgms3d was written by Michael Krause <m.krause@tu-harburg.de>.
+
+Thanks to Henry Wu <henrywuuts@gmail.com> for doing initial
+experiments on parallelizing wgms3d (pwgms3d-1.3), which inspired the
+modularization of the old code base (wgms3d-1.2.2) and the
+introduction of the solver_slepc.cc module.
+
+Furthermore, wgms3d incorporates some code by:
+
+* Steven G. Johnson <stevenj@alum.mit.edu>
+    (autoconf macros for LAPACK and BLAS detection;
+     original license: GPL with autoconf exception)
+
+* The lib2geom team,
+  Marco Cecchetti <mrcekets at gmail.com>,
+  Michael G. Sloan <mgsloan@gmail.com> and others
+    (geometry.h, bezier.cc:
+     some geometry and Bézier code;
+     original license: LGPL-2.1 or MPL-1.1)
+
+* Per Vognsen <vognsen@frost.slimy.com>
+    (bezier.cc:
+     polynomial root finder;
+     original license: "This software is free for any use.")
+

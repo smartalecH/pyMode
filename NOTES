@@ -1,0 +1,70 @@
+
+Some notes on the "design" of wgms3d and its internal data structures
+(some notes might no longer apply for wgms3d-2.0)
+----------------------------------------------------------------------
+
+Two-dimensional arrays corresponding to data defined on the
+user-specified grid (such as field data, or refractive-index data) are
+stored in Fortran order.
+
+For example, when M(i,j) denotes row i, column j of an m-by-n matrix M
+(i and j are numbered from zero), then the array entries are stored in
+the order
+
+  M(0,0) M(1,0) M(2,0) ... M(0,1) M(1,1) ...
+
+or, explicitly, M(i,j) is indexed from C as M[j*ldM + i], where ldM is
+the 'leading dimension' of matrix M (the number m of rows).
+
+----------------------------------------------------------------------
+
+The finite-difference system matrix is initially always set up as
+complex doubles. Only when converting to SuperLU format, the format is
+changed to the final format.
+
+----------------------------------------------------------------------
+
+The mode solver is formulated in terms of the two transverse H-field
+components (Hrho and Hz).  Other field components can be calculated
+from these, once they have been obtained by ARPACK.
+
+The formulas for calculating the remaining field components have
+contributions that are proportional to beta, to 1/beta, and to 1,
+respectively (see notes.tex from 20100723). These are precalculated
+once (for all modes) in wgms3d::init_derivation(). They are then
+individually multiplied by the beta for each mode in the
+get_{er|ez|ep|hp} functions.
+
+----------------------------------------------------------------------
+
+The finite-difference system matrix is initially set up for all points
+on the grid specified by the user, also on the boundary points. To
+make this possible, the grid is first extended on all four sides by
+ghost points (NUM_GHOST_POINTS = 1).
+
+Only after that the boundary points are considered - depending on the
+wall type (electric or magnetic), several of the unknowns in the FD
+eigenproblem are known to be zero in advance. The corresponding rows
+and columns from the FD matrix are removed accordingly. The
+semi-vectorial and scalar approximations are handled in the same step.
+
+After the ARPACK eigenvalue calculation, the eigenvectors need to be
+padded with zeros accordingly. This is handled by
+wgms3d::activate_mode(). This approach makes Dirichlet / Neumann / SV
+modes totally transparent for the rest of the program.
+
+----------------------------------------------------------------------
+
+The wgms3d class implementation is not really prepared for sequential
+analysis of different MGP files. To avoid memory leaks in the present
+form, the class should be reinstantiated for each new
+calculation. Also, errors (memory allocation failures) could be
+handled much more gracefully than with a simple "exit(1);".
+
+----------------------------------------------------------------------
+
+Most of the code is prepared for handling stencils larger than the
+standard "central point + one layer around" 9-point stencil. The
+#define NUM_GHOST_POINTS is for this purpose - it defines the number
+of "layers" around the central point. In some places it may still be
+hard-coded as 1 (caveat emptor).

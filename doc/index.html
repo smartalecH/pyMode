@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>wgms3d &#8212; free electromagnetic waveguide mode solver</title>
+    <meta name="author" content="Michael Krause">
+    <meta name="description" content="wgms3d is a free finite-difference electromagnetic mode solver for curved waveguides with angled and curved dielectric interfaces.">
+    <meta name="keywords" content="waveguide, finite-difference method, mode solver, vectorial, curvature loss, bending loss, Perfectly Matched Layers, PML, free software, GNU GPL">
+    <meta http-equiv="expires" content="86400">
+    <link rel="stylesheet" href="screen.css" type="text/css" media="screen">
+  </head>
+  <body>
+
+    <div id="header">
+      <span style="font-size:200%; font-weight:bold;">wgms3d &#8212; full-vectorial waveguide mode solver</span>
+
+      <br><br>
+      [ About ] &#8212;
+      [ <a href="installation.html">Installation</a> ] &#8212;
+      [ <a href="tutorial.html">Tutorial</a> ]
+    </div>
+
+    <div class="wrapper">
+      <div class="figure"><img src="coords.png" width=385 height=195 alt="Coordinate system used by wgms3d."></div>
+
+      <h2>What is <i>wgms3d</i>?</h2>
+
+      <p><i>wgms3d</i> is a freely available software tool that calculates the modes of dielectric electromagnetic
+	waveguides.</p>
+
+      <p>For example, you can analyze:
+	<ul>
+	  <li>integrated-optical waveguides such as silicon / SOI waveguides, as well as optical fibers,</li>
+
+	  <li>rectangular (metal-pipe) waveguides with dielectric insets,</li>
+
+	  <li>waveguides with active and lossy dielectrics,</li>
+
+	  <li>leakage losses due to waveguide curvature and / or frustrated total internal reflection (ARROW waveguides,
+	  substrate leakage).</li>
+
+	</ul>
+
+      <p>This software can currently <b>not</b> handle photonic-crystal waveguides, metallic insets, or curved
+	metallic boundaries.</p>
+
+      <h3>Features</h3>
+
+      <ul class="spacedout">
+	<li>The waveguide is assumed to have a <span style="font-weight: bold;"> piecewise constant refractive-index
+	  profile</span> (a "step-index" profile), i.e., the waveguide cross section can consist of several adjacent
+	  regions of constant refractive index. The interfaces between these regions do not need to coincide with the
+	  discretization grid: <span style="font-weight: bold;">dielectric interfaces may be straight (under any
+	  arbitrary angle) or curved</span> (as in optical fibers).</li>
+
+	<li>The dielectrics are assumed to be <b>isotropic</b> and
+	  <b>non-magnetic.</b> <b>Lossy materials</b> are supported in the form of
+	  materials with <b>complex refractive indices.</b></li>
+
+	<li>The entire <span style="font-weight: bold;">waveguide may be curved</span> along the propagation direction,
+	  thus enabling the computation of bending or curvature losses. The simulation is based on cylindrical
+	  coordinates adapted to the waveguide curvature and does not rely on the widespread approximate
+	  equivalent-straight-waveguide model.</li>
+
+	<li>By default, the computation is <span style="font-weight: bold;">fully vectorial</span>.  It does not make
+	  any a-priori assumptions about the magnitude of the six electromagnetic field
+	  components. Approximate <b>scalar</b> or <b>semi-vectorial</b> calculation modes may optionally be enabled by
+	  the user.</li>
+	
+	<li>The four edges of the rectangular computational domain are enclosed by perfectly electrically or
+	  magnetically conducting walls.  These walls may be padded with <span style="font-weight: bold;">Perfectly
+	  Matched Layers</span> in order to absorb outgoing radiation and thus simulate leakage and curvature
+	  losses.</li>
+      </ul>
+
+      <p>The software is written in C++ and uses the <a href="http://www.caam.rice.edu/software/ARPACK/">ARPACK</a>
+	and <a href="http://crd.lbl.gov/~xiaoye/SuperLU/">SuperLU</a> libraries to solve the discretized
+	eigenproblem. It should compile under any <b>Unix</b>-like operating system. Scripts for post-processing and
+	visualization of the results in <b><a href="https://gnu.org/software/octave/">GNU Octave</a></b>
+	and <b>Matlab</b> are provided.</p>
+
+      <p><i>wgms3d</i> is free software under the <a href="http://en.wikipedia.org/wiki/GNU_General_Public_License">GNU
+	GPL</a>.</p>
+
+      <h2>News</h2>
+
+      <ul class="spacedout">
+
+	<li><b>17-May-2014:</b> Released <a href="wgms3d-2.0.tar.gz">v2.0</a>.
+	  <ul>
+	    <li>Introduced a new parallel / distributed eigensolver backend based on MPI
+	      / <a href="http://www.mcs.anl.gov/petsc/">PETSc</a> / <a href="http://www.grycap.upv.es/slepc/">SLEPc</a>
+	      for large-scale simulations. This work was inspired by initial experiments done by Henry Wu with
+	      <a href="http://henryhwu.com/pwgms3d">pwgms3d.</a></li>
+
+	    <li>Can choose during configuration stage whether to use the new MPI-based parallel eigensolver backend or
+	      the old one based on SuperLU / ARPACK.</li>
+
+	    <li>Fixed some of the Matlab scripts for compatibility with GNU Octave.</li>
+
+	  </ul>
+
+	<li><b>01-Dec-2013:</b> Thanks to <a href="http://henryhwu.com/">Henry Wu</a>, there is a parallelized version
+	  of wgms3d-1.2 now. It is based on the <a href="http://www.grycap.upv.es/slepc/">SLEPc</a> eigensolver library
+	  and can be significantly faster than the ARPACK-/SuperLU-based code. Until his changes have been merged into
+	  the main wgms3d branch, you can download his version of
+	  wgms3d <a href="http://henryhwu.com/pwgms3d">here</a>. Use it at your own risk; no in-depth comparison of the
+	  results of old and new wgms3d have been performed yet.
+
+	<li><b>22-Sep-2013:</b> Released <a href="wgms3d-1.2.2.tar.gz">v1.2.2</a>.
+	  <ul>
+	    <li>Fixed source code so that it better complies with the C++11 standard. (Thanks to Zhanghua Han for
+	      pointing out a compilation problem.)
+	  </ul>
+	</li>
+
+	<li><b>17-Aug-2013:</b> Released <a href="wgms3d-1.2.1.tar.gz">v1.2.1</a>.
+	  <ul>
+	    <li>Updated installation instructions and build script for
+	      the <a href="http://forge.scilab.org/index.php/p/arpack-ng/">ARPACK-NG</a> library distribution. It is no
+	      longer recommended to use my old self-packaged and slightly modified version of ARPACK. This simplifies
+	      installation and makes <i>wgms3d</i> work on platforms where it didn't work before (thanks to Thach Nguyen
+	      for the reports).
+	  </ul>
+	</li>
+
+	<li><b>9-Jul-2012:</b> Released <a href="wgms3d-1.2.tar.gz">v1.2</a>. Major changes:
+	  <ul>
+	    <li>In the semi-vectorial calculation mode, derived fields (transverse E field + longitudinal E and H
+	      fields) can now be exported. Also, added a new test script <tt>'tests/semivectorial/'</tt>, which compares
+	      the full-vectorial (exact) and semi-vectorial (approximate) modes in a waveguide at different
+	      wavelengths. As expected, the error of the SV approximation becomes smaller towards shorter
+	      wavelengths.</li>
+
+	    <li>Added a new test script <tt>'tests/complex_modes/'</tt>. It checks whether complex modes are calculated
+	      correctly by reproducing the effective-index data from Fig. 4b of <a target=_blank
+	      href="http://dx.doi.org/10.1109/TMTT.1985.1133010">Strube's 1985 MTT article.</a></li>
+
+	    <li>Extended the script <tt>'matlab/wgms3d_mgp_rib_waveguide.m'</tt>. It can now generate strip waveguides
+	      or "photonic wires", too. Just set the etch depth D to the same value as the central rib height H. See
+	      documentation inside that script.</li>
+
+	    <li>Fixed the script <tt>'matlab/wgms3d_plot_refractive_index.m'</tt>. It now correctly
+	      loads <tt>'epsis.bin'</tt> instead of <tt>'epsis.txt'</tt>.</li>
+
+	    <li>Fixed handling of comment lines in MGP files (those starting with a '#' sign).</li>
+
+	  </ul>
+	</li>
+
+      </ul>
+      
+      <p>More detailed information on what has changed between releases may be found in the text files <tt>NEWS</tt>
+	and <tt>ChangeLog</tt> inside the distribution. If you want to be notified about future updates, consider
+	subscribing to the project on <a href="http://freecode.com/projects/wgms3d">freecode</a>.
+
+	<h2 class="clearfloats">Method</h2>
+
+      <p>The software implements a finite-difference method that is based on ideas proposed in</p>
+      <ul>
+	<li><span style="font-style: italic;">Y.-C.  Chiang, Y.-P. Chiou, and H.-C. Chang, "Improved Full-Vectorial
+	    Finite-Difference Mode Solver for Optical Waveguides With Step-Index Profiles," J. Lightwave Technol.,
+	    vol. 20, no. 8, pp. 1609&#8211;1618, Aug.
+	    2002.</span> <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=1058177"
+	    target=_blank>[PDF]</a></li>
+      </ul>
+
+      <p><i>wgms3d</i> is based on a generalization of the concepts of Chiang et al. to curved waveguides and employs a
+	simplified formulation. The details are described in</p>
+      <ul>
+	<li><span style="font-style: italic;">M.  Krause, "Finite-Difference Mode Solver for Curved Waveguides with
+	    Angled and Curved Dielectric Interfaces", J. Lightwave Technol., vol. 29, no. 5, pp. 691-699
+	    (2011).</span> <a href="http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=5688431"
+	    target=_blank>[PDF]</a></li>
+      </ul>
+      <p>Please cite the latter paper in your own articles if you found this software useful for your research.</p>
+
+      <h2 class="clearfloats">References</h2>
+
+      <p><i>wgms3d</i> (and predecessors) have been used since 2004 in several research projects of
+	the <a href="http://www.om.tu-harburg.de/" target=_blank>OKT group at TUHH</a> and by collaborators. Some
+	articles making use of the results of this mode solver are</p>
+      <ul class="spacedout">
+	<li><i>I. Giuntoni, D. Stolarek, J. Bruns, L. Zimmermann, B. Tillack, K. Petermann, "Integrated Dispersion
+	    Compensator Based on Apodized SOI Bragg Gratings", IEEE Photon. Technol. Lett. 25(14), pp. 1313-1316
+	    (2013)</i> <a href="http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=6517224"
+	    target=_blank>[PDF]</a></li>
+	<li><i>D. Jalas, A. Petrov, M. Krause, J. Hampe, M. Eich, "Resonance splitting in gyrotropic ring resonators",
+	    Opt. Lett. 35(20), pp. 3438-3440
+	    (2010)</i> <a href="http://www.opticsinfobase.org/abstract.cfm?URI=ol-35-20-3438"
+	    target=_blank>[PDF]</a></li>
+	<li><i>M. Krause, H. Renner, E. Brinkmeyer, "Strong enhancement of Raman-induced nonreciprocity in silicon
+	    waveguides by alignment with the crystallographic axes", Appl. Phys. Lett. 95(26), #261111
+	    (2009)</i> <a href="http://link.aip.org/link/APPLAB/v95/i26/p261111/s1" target=_blank>[PDF]</a></li>
+	<li><i>M. Krause, H. Renner, S. Fathpour, B. Jalali, E. Brinkmeyer, "Gain Enhancement in Cladding-Pumped Silicon
+	    Raman Amplifiers", IEEE J. Quantum Electron. 44(7), pp. 692-704
+	    (2008)</i> <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4533032"
+	    target=_blank>[PDF]</a></li>
+	<li><i>M. Krause, H. Renner, E. Brinkmeyer, "Polarization-Dependent Curvature Loss in Silicon Rib Waveguides",
+	    IEEE J. Sel. Top. Quantum Electron. (Special Issue on Silicon Photonics) 12(6), pp. 1359-1362
+	    (2006)</i> <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4032666"
+	    target=_blank>[PDF]</a></li>
+      </ul>
+
+      <p>The development of this software was supported by Freie und Hansestadt Hamburg under grant "Hybride
+	Mikrophotonik" and by the <a href="http://www.dfg.de/">Deutsche Forschungsgemeinschaft (DFG)</a> within
+	<a href="http://www.dfg.de/foerderung/programme/listen/projektdetails/index.jsp?id=15008671">Forschergruppe
+	  FOR 653</a>.</p>
+
+    </div>
+    
+    <div class="wrapper">
+      <div style="text-align: right;">
+	Copyright (C) 2005-2014
+	<a href="http://www.soundtracker.org/raw/">Michael Krause</a>
+	&lt;<a href="mailto:m.krause@tu-harburg.de">m.krause@tu-harburg.de</a>&gt;
+      </div>
+      <div style="float:right;">
+	<a href="http://validator.w3.org/check?uri=referer">
+	  <img style="margin:0;border:0;padding:5px;width:88px;height:31px"
+	       src="http://www.w3.org/Icons/valid-html401"
+	       alt="Valid HTML 4.01 Transitional" height="31" width="88"></a>
+	<a href="http://jigsaw.w3.org/css-validator/check/referer">
+	  <img style="margin:0;border:0;padding:5px 0 5px 5px;width:88px;height:31px"
+	       src="http://jigsaw.w3.org/css-validator/images/vcss"
+	       alt="Valid CSS"></a>
+      </div>
+      <div style="float:left;">
+	<a href="http://freecode.com/projects/wgms3d">
+	  <img style="margin:3px;border:1px solid gray;padding:1px;width:70px;height:31px"
+	       src="freecode_logo.png"
+	       alt="Follow on freecode" height="31" width="66"></a>
+      </div>
+    </div>
+
+  </body>
+</html>
+
+<!-- Local Variables: -->
+<!-- fill-column: 120 -->
+<!-- End: -->

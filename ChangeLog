@@ -1,0 +1,344 @@
+2014-05-17  Michael Krause  <m.krause@tu-harburg.de>
+
+	* doc/: Copied web-site files here for documentation; README and
+	INSTALL now point here.
+
+2014-03-09  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Update acx_blas.m4 and acx_lapack.m4 to latest versions from GNU
+	Autoconf Archive.
+
+2014-01-07  Michael Krause  <m.krause@tu-harburg.de>
+
+	* matlab/wgms3d_plot_quiver.m: Set colors for quiver real and
+	imaginary part explicitly.
+
+2013-12-27  Michael Krause  <m.krause@tu-harburg.de>
+
+	* matlab/wgms3d_plot_contours.m: Fixed to not print a warning in
+	Octave 3.6.4.
+
+	* wgms3d.cc (calculate_modes): Only root process generates FD
+	matrix; n and sigma are then broadcast to the other nodes.
+
+	* main.cc: Only root process outputs the final field data and
+	computes derived fields.
+
+	* sparse.h (sparse_entry): Removed unused is_same_place() member
+	function.
+
+2013-12-26  Michael Krause  <m.krause@tu-harburg.de>
+
+	* configure.ac: improvements: check for C++11 compiler; check for
+	Boost headers; don't have automatic dependencies any longer; check
+	for MPI, PETSc and SLEPc; make sure that slepc and arpack aren't
+	selected simultaneously, and at least one is selected.
+
+2013-12-22  Michael Krause  <m.krause@tu-harburg.de>
+
+	* solver_slepc.cc: Started to write code for interfacing to SLEPc
+	solver (thanks to Henry Wu for doing some initial experiments with
+	his pwgms3d-1.3).
+
+	* wgms3d.cc, solver.h, solver_superlu_arpack.cpp: Moved the old
+	SuperLU/ARPACK-specific stuff from wgms3d.cc to
+	solver_superlu_arpack.cpp, and introduced an intermediate
+	interface (ISolverResult).
+
+	* main.cc: printing Boost diagnostic information for exceptions
+	caught in main().
+
+	* Started to improve C++ code quality all over the place. Not
+	listing all the details here, since it's too much.
+
+2013-09-22  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v1.2.2.
+
+	* complex_functions.h: Some helper functions for dealing with
+	complex numbers, extracted from fortran_interfaces.h so that the
+	template definition order is correct.
+
+2013-08-17  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v1.2.1.
+
+	* INSTALL (ARPACK): Updated to recommend using arpack-ng instead
+	of the custom-made arpack-96-r2-mk04.tar.gz.
+
+	* configure.ac: Checking for libarpack.so without a specific
+	version number.
+
+2012-07-09  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v1.2.
+
+2012-07-04  Michael Krause  <m.krause@tu-harburg.de>
+
+	* mgp.cc: Fixed handling of comment lines (those starting with a
+	hash sign).
+
+2012-07-03  Michael Krause  <m.krause@tu-harburg.de>
+
+	* NOTES: Added a text file with some (unsorted) notes on the
+	general design of the program and its data structures.
+
+	* sparse.h: Removed several unused class methods.
+
+2012-06-27  Michael Krause  <m.krause@tu-harburg.de>
+
+	* tests/: Renamed 2005_JSTQE_Prkna -> disk_resonator,
+	2009_PTL_Nguyen -> tm2te_leakage, 2006_OPEX_Dulkeith ->
+	silicon_strip_waveguide.
+
+2012-06-18  Michael Krause  <m.krause@tu-harburg.de>
+
+	* main.cc: this file now implements the shell interface to the new
+	wgms3d C++ class.
+
+	* Re-organized and cleaned up the source code to make it easier to
+	use wgms3d in other programs. Global (static) variables have been
+	removed completely. Everything is now encapsulated in C++ classes.
+
+2012-06-13  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Makefile.am (wgms3d_CPPFLAGS): Removed -Wno-deprecated (which
+	was only required for ext/hash_map), replaced with -std=c++0x.
+
+	* diffops.cc: Replaced the use of the GNU extension ext/hash_map
+	by unordered_map from C++11 / TR1.
+
+2012-06-07  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Enabled exportation of derived fields (Er, Ez, Ep, Hp) in
+	semi-vectorial mode. Printing error and terminating if derived
+	fields are requested in scalar mode.
+
+	* matlab/wgms3d_normalize_mode_field.m: New function. Normalizes a
+	given mode field with respect to the usual power-normalization
+	integral.
+
+	* tests/semivectorial/semivectorial.m: New test script. Compares
+	full-vectorial (exact) and semi-vectorial (approximate) modes in a
+	waveguide at different wavelengths.
+
+2012-06-06  Michael Krause  <m.krause@tu-harburg.de>
+
+	* wgms3d.cc (eigensolve): Asking user to contact the author when
+	DNAUPD fails. In very rare cases (but then reproducibly), ARPACK's
+	dnaupd fails with IDO=99, INFO=-8. I don't have any cases for the
+	current wgms3d, but it happened with earlier versions.
+
+2012-02-27  Michael Krause  <m.krause@tu-harburg.de>
+
+	* tests/2006_OPEX_Dulkeith/m05_calc_neffs.m: Using
+	wgms3d_mgp_rib_waveguide() instead of custom script now.
+
+	* matlab/wgms3d_mgp_rib_waveguide.m: Can now generate strip
+	waveguides or "photonic wires". Just set the etch depth D to the
+	same value as the central rib height H. Also added some
+	consistency checks.
+
+2011-11-09  Michael Krause  <m.krause@tu-harburg.de>
+
+	* configure.ac: Added F77_FUNC(dcopy,DCOPY)(); to the SuperLU and
+	ARPACK test scripts to work around linker trouble on my system
+	(Ubuntu 11.10).
+
+2011-07-25  Michael Krause  <m.krause@tu-harburg.de>
+
+	* matlab/wgms3d_plot_refractive_index.m: Load 'epsis.bin' instead
+	of 'epsis.txt'.
+
+2011-06-22  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v1.1.0.
+
+2011-06-21  Michael Krause  <m.krause@tu-harburg.de>
+
+	* tests/2009_PTL_Nguyen/nguyen_prepfunc.m: Using
+	wgms3d_mgp_rib_waveguide now.
+
+	* matlab/wgms3d_tracemodes_update_parameter.m: Added this script,
+	it was missing in the previous release.
+
+	* matlab/wgms3d_mgp_rib_waveguide.m: New function to generate an
+	MGP file describing a rib waveguide. See
+	tests/lossy_materials/lossy.m for usage.
+
+	* tests/lossy_materials/lossy.m: Verify lossy-material
+	implementation by comparing against the standard perturbation
+	result for the modal attenuation caused by slightly lossy
+	materials.
+
+	* matlab/wgms3d_load_mode_field.m: Import epsis.bin instead of
+	epsis.txt now.
+
+	* matlab/wgms3d_plot_mgp.m: Updated to handle MGP-format extension
+	for complex refractive indices.
+
+	* mgp.cc (init_geometry): Updated to use std::ifstream instead of
+	fopen() / fscanf(), thus handling complex refractive indices now.
+
+2011-06-20  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Throughout the program: treat epsilon_r = n^2 as a complex
+	value, no other changes.
+
+	* wgms3d.cc (initmatrix): Exporting epsis.bin (containing complex
+	entries) instead of epsis.txt with real entries now.
+
+2011-06-01  Michael Krause  <m.krause@tu-harburg.de>
+
+	* matlab/wgms3d_calc_group_index.m: Calculates the group index of
+	a mode from its field distribution.
+
+	* matlab/wgms3d_load_mode_field.m: Also importing 'epsis.txt' now,
+	if it exists.
+
+2011-05-31  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v1.0.2.
+
+	* wgms3d.cc (main): Output warning when using scalar computation
+	mode in conjunction with PMLs or non-zero waveguide curvature. I
+	haven't verified this yet.
+
+	* mgp.cc (init_geometry): Output warning when mgp file specifies
+	elliptical interfaces (haven't yet found the time to check whether
+	they really work okay).
+
+2011-05-23  Michael Krause  <m.krause@tu-harburg.de>
+
+	* tests/2005_JSTQE_Prkna/bendit.m, tests/2009_PTL_Nguyen/main.m:
+	Updated to use wgms3d_tracemodes.m.
+
+	* matlab/wgms3d_tracemodes_plotneffs.m: New helper script.
+
+	* matlab/wgms3d_tracemodes.m: General-purpose mode-tracing
+	function, adapted from tests/2009_PTL_Nguyen/tracemodes.m
+
+2011-05-20  Michael Krause  <m.krause@tu-harburg.de>
+
+	* tests/fiber_convergence/lpmodes.m: Test for convergence of LP
+	straight fiber modes (tests scalar computation mode).
+
+	* matlab/wgms3d_plot_scalar.m: New function to plot scalar mode
+	fields.
+
+	* wgms3d.cc (main): Added scalar computation mode (command-line
+	switch "-p").
+
+	* diffops.cc (make_curv_interface_matrix): When we are in scalar
+	mode, pretend the refractive-index contrast D is zero, keep only
+	those terms in the interface equations that are proportional to
+	D * n_-^2 = n_+^2 - n_-^2.
+
+2011-02-16  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v1.0.1.
+
+	* matlab/wgms3d_run.m: If wgms3d fails, return an empty cell
+	array {} instead of throwing a fatal error.
+
+	* wgms3d.cc, matlab/*.m: For consistency reasons, exported
+	discretization grids are called 'r.txt' and 'z.txt' now. Same with
+	variable names x -> r, y -> z. Update your scripts.
+
+	* Code cleanup: consistently rename variable names containing 'x'
+	and 'y' to 'r' (rho) and 'z', respectively, in accordance with the
+	notation in my JLT paper; declaring some member functions and
+	arguments constant.
+
+2011-02-15  Michael Krause  <m.krause@tu-harburg.de>
+
+	* tests/2009_PTL_Nguyen/: New test. Reproduces results from Fig. 4
+	of Thach G. Nguyen, Ravi S. Tummidi, Thomas L. Koch, Arnan
+	Mitchell, "Rigorous Modeling of Lateral Leakage Loss in SOI
+	Thin-Ridge Waveguides and Couplers", IEEE Photonics Technology
+	Letters, vol. 21, no. 7, April 2009.
+
+	* diffops.cc (make_curv_interface_matrix), Makefile.am: Removed
+	automatically generated interface equations. Now explicitly
+	implementing the hand-made interface equations as they are printed
+	in the JLT paper.
+
+	* mgp.cc: Removed extra code for handling circular
+	interfaces. This is now handled as a special case of an elliptical
+	interface.
+
+	* tests/fiber_convergence/: Test for convergence of the effective
+	indices of a circular step-index fiber (produces the results of
+	Fig. 3 from the paper).
+
+2011-02-14  Michael Krause  <m.krause@tu-harburg.de>
+
+	* fortran_interface.h: Removed some unused functions.
+
+	* matlab/wgms3d_import_output.m: The sgetl() function was
+	missing. Fixed. (Thanks to Ivano Giuntoni for reporting this).
+
+	* diffops.cc (make_curv_interface_matrix): Using std::fabs()
+	instead of abs().
+
+2011-02-09  Michael Krause  <m.krause@tu-harburg.de>
+
+	* bezier.cc (bezier_find_line_intersections): Can handle simple
+	and interpolated 3-point Bézier curves now.
+
+2011-02-08  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v1.0.0.
+
+	* ghostpoints.cc, ghostpoints.h: Cleaned up. This file now
+	contains code for handling ghost points and discretization points
+	where the field is known to be zero in advance (either due to
+	semi-vectorial computation or due to Dirichlet boundary
+	conditions).
+
+	* wgms3d.h: New file, defining some global variables that need to
+	be visible to other parts of the code.
+
+	* diffops.cc, diffops.h: Cleaned up. Contains the implementation
+	of Chiang's Taylor-expansion process and the boundary conditions.
+
+	* geometry.h: New file, contains definitions of Point, Interval
+	and Rect. Cleaned up.
+
+2011-02-07  Michael Krause  <m.krause@tu-harburg.de>
+
+	* bezier.cc, bezier.h: Completely new code for finding
+	intersections of the Taylor-expansion ray with Bézier curves. This
+	one is based on solving the resulting (quartic) polynomial using a
+	recursive bisection algorithm whose implementation by Per Vognsen
+	<vognsen@frost.slimy.com> I found on
+	http://www.flipcode.com/archives/Polynomial_Root-Finder.shtml. However,
+	I modified the latter to concentrate on zeros in the
+	interval [0,1] only, and adapted the tolerances for our
+	purposes. This is now much more robust than the old lib2geom code.
+
+2011-01-27  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v0.8.9.
+
+2011-01-25  Michael Krause  <m.krause@tu-harburg.de>
+
+	* mgp.cc (get_ifdata): For Bézier curves, calculate tangent vector
+	and curvature using the easily calculated first- and second-order
+	hodographs of the Bézier curves and the standard formula for the
+	curvature of parameterized curves. (Turns out that the curvatures
+	calculated this way are more accurate than those returned by the
+	earlier lib2geom implementation with the standard tolerances).
+
+	* bezier.h (bezier_valueAt): New function, evaluates Bézier curve.
+
+	* bezier.h: Code stolen from lib2geom snapshot 20101112. This is
+	the minimum required for find_intersections() to work. No
+	functional changes so far, but this simplifies installation of
+	wgms3d.
+
+	* configure.ac: Removed dependency on lib2geom.
+
+2011-01-13  Michael Krause  <m.krause@tu-harburg.de>
+
+	* Released v0.8.8 (first public release).

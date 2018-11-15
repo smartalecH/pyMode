@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>wgms3d Installation Instructions</title>
+    <meta name="author" content="Michael Krause">
+    <meta name="description" content="Installation instructions for wgms3d, a free electromagnetic waveguide mode solver.">
+    <meta http-equiv="expires" content="86400">
+    <link rel="stylesheet" href="screen.css" type="text/css" media="screen">
+  </head>
+  <body>
+
+    <div id="header">
+      <span style="font-size:200%; font-weight:bold;">wgms3d &#8212; full-vectorial waveguide mode solver</span>
+
+      <br><br>
+      [ <a href="index.html">About</a> ] &#8212;
+      [ Installation ] &#8212;
+      [ <a href="tutorial.html">Tutorial</a> ]
+    </div>
+
+    <div class="wrapper">
+      <h2>Installation of serial / non-distributed wgms3d</h2>
+      
+      <p>(Instructions for parallel build at bottom of this page.)</p>
+
+      <p>wgms3d is written in C++ and needs to be compiled on a Unix-like system (e.g., Linux). The installation follows
+	the more or less standard method of <tt>configure</tt> / <tt>make</tt> / <tt>make install</tt>. However, before
+	installing wgms3d, several other libraries need to be installed on your system; just follow the order on this
+	page.</p>
+
+      <p>If you have trouble installing wgms3d, contact the <a href="mailto:m.krause@tu-harburg.de">contact the
+	  author</a> including the shell output of the compilation process in your mail.</p>
+
+    </div>
+
+    <div class="wrapper">
+      <h2>Prerequisite #1: SuperLU</h2>
+
+      <p>wgms3d expects a shared library <span style="font-family: monospace;">libsuperlu.so.4.0.0</span> as well as
+	SuperLU header files during compilation. This shared library is based on the original SuperLU 4.0 distribution,
+	on a patch (by Sébastien Fabbro) that adds the GNU autotools build system, and on patch by myself that restricts
+	the amount of symbols that are exported by the library to the absolute minimum required by wgms3d.</p>
+
+      <p>The quickest way of installing is simply following the instructions in the "Installation" section below. The
+	"Ingredients" section below lists the individual sources, in case you are interested.</p>
+
+      <h3>Quick Installation</h3>
+      <ul>
+	<li>Download <a href="http://www.soundtracker.org/raw/wgms3d/superlu-4.0mk05.tar.gz">superlu-4.0mk05.tar.gz</a></li>
+	<li>Extract: <span style="font-family: monospace;">tar zxf superlu-4.0mk05.tar.gz ; cd superlu-4.0mk05</span></li>
+	<li>Configure: <span style="font-family: monospace;">./configure</span>
+	  <ul>
+	    <li>If you already have a shared SuperLU library installed on your system, installing this one on top of it
+	      may break other applications. In that case, choose another installation prefix
+	      using <span style="font-family: monospace;">--prefix=/desired/destination</span></li>
+	    <li>Also, in case BLAS is not found automatically, it might be necessary to specify the BLAS library to use
+	    using <span style="font-family: monospace;">--with-blas=/path/to/libblas.so</span> (see below for how to
+	    link to MKL)</li>
+	</ul></li>
+	<li>Compile: <span style="font-family: monospace;">make</span></li>
+	<li>Install: <span style="font-family: monospace;">sudo make install</span></li>
+      </ul>
+
+      <h3>Ingredients</h3>
+
+      <p>This is how to reproduce the version of SuperLU that I offer
+	for direct download above (superlu-4.0mk05.tar.gz):</p>
+      <ul>
+	<li>Download SuperLU Version 4.0 (dated 18 December 2009) from
+	the <a href="http://crd.lbl.gov/%7Exiaoye/SuperLU/">SuperLU homepage</a></li>
+
+	<li>Download <a href="http://sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo-x86/sci-libs/superlu/files/superlu-4.0-autotools.patch?revision=1.2">superlu-4.0-autotools.patch</a>
+	(dated 27 September 2010) from the <a href="http://packages.gentoo.org/package/sci-libs/superlu">Gentoo Linux
+	SuperLU page</a></li>
+
+	<li>Download <a href="superlu-4.0mk05.patch">superlu-4.0mk05.patch</a></li>
+
+	<li>Unpack original SuperLU: <span style="font-family: monospace;">tar zxf superlu_4.0.tar.gz</span></li>
+
+	<li><span style="font-family: monospace;"></span>Apply autotools patch: <span style="font-family: monospace;">cd
+	SuperLU_4.0 ; patch -p0 &lt; ../superlu-4.0-autotools.patch</span></li>
+
+	<li>Apply versionscript patch: <span style="font-family: monospace;">patch -p1 &lt; ../superlu-4.0mk05.patch</span></li>
+
+	<li>Create build system: <span style="font-family: monospace;">autoreconf ; automake -acf ; autoreconf</span></li>
+
+      </ul>
+
+    </div>
+
+    <div class="wrapper">
+      <h2>Prerequisite #2: ARPACK-NG</h2>
+
+      <p>Install <a href="http://forge.scilab.org/index.php/p/arpack-ng/">arpack-ng</a>.
+	I have used version 3.1.5.</p>
+
+      <p>Some Linux distributions have pre-compiled packages for this,
+        e.g. Fedora brings an arpack package which is based on
+        arpack-ng. If you are not sure, compile it yourself, it's not
+        difficult.</p>
+
+    </div>
+
+    <div class="wrapper">
+      <h2>Installation of wgms3d mode solver</h2>
+
+      <ul>
+	<li>Download <a href="wgms3d-2.0.tar.gz">wgms3d-2.0.tar.gz</a></li>
+
+	<li>Extract: <span style="font-family: monospace;">tar zxf wgms3d-2.0.tar.gz ; cd wgms3d-2.0</span></li>
+	
+	<li>Configure: <span style="font-family: monospace;">./configure</span>
+	  <ul>
+	    <li>In case BLAS is not found automatically, it might be necessary to specify the BLAS library to use
+	      using <span style="font-family: monospace;">--with-blas=/path/to/libblas.so</span> (specify the full
+	      filename of the library, not just the directory containing it) (see below for how to link to MKL)</li>
+
+	    <li>In case LAPACK is not found automatically, it might be necessary to specify the LAPACK library to use
+	      using <span style="font-family: monospace;">--with-lapack=/path/to/liblapack.so</span> (specify the full
+	      filename of the library, not just the directory containing it)</li>
+
+	    <li>The location of the SuperLU library compiled previously must be specified using something
+	      like <span style="font-family: monospace;">--with-superlu=/usr/local</span></li>
+
+	    <li>The location of the ARPACK-NG library <span style="font-family: monospace;">libarpack.so</span> must be
+              specified using something like <span style="font-family: monospace;">--with-arpack=/usr/local</span></li>
+
+	    <li>For example, on my system, I use the following command:<br>
+	      <tt>./configure --with-superlu=/opt/superlu-4.0mk05 --with-arpack=/opt/arpack-ng-3.1.5</tt>
+	    </li>
+	</ul></li>
+
+	<li>Compile: <span style="font-family: monospace;">make</span></li>
+
+	<li>Install (if desired): <span style="font-family: monospace;">sudo make install</span></li>
+
+	<li>Executing <tt>sudo ldconfig</tt> once may be necessary before running wgms3d for the first time. Also, it
+	might be necessary to set the environment variable LD_LIBRARY_PATH to point to the directories containing the
+	SuperLU and ARPACK shared libraries. Use the 'ldd' command to find out which shared libraries are used.</li>
+
+	<li>You're done.</li>
+
+      </ul>
+
+    </div>
+
+    <div class="wrapper">
+      <h2>Linking with the Intel&#0174; Math Kernel Library (Intel&#0174; MKL)</h2>
+
+      <p>The instructions above were assuming you are linking to a BLAS library that is installed on your system in the
+	form of a single file with a name such as <tt>libblas.so</tt>.</p>
+
+      <p>The <a href="http://software.intel.com/en-us/articles/intel-mkl/">MKL</a> contains a highly optimized version
+	of BLAS/LAPACK. If you want to link against MKL, forget about the '<tt>--with-blas</tt>' configure option
+	described above. The automatic detection will not work either. Instead, before configuring and compiling SuperLU
+	/ ARPACK / wgms3d, set the environment variable <tt>BLAS_LIBS</tt>. Using
+	the <a href="http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor/">MKL link line advisor
+	page</a> I figured out the following link options for an Intel 64 system:</p>
+
+      <div class="codebox">
+	<pre>
+	  export BLAS_LIBS='-L/path/to/MKL/11.0/069/mkl/lib/em64t
+          -Wl,--start-group -lmkl_gf_lp64 -lmkl_sequential -lmkl_core
+          -Wl,--end-group -lpthread'</pre>
+      </div>
+      <p>Replace the <tt>/path/to/MKL</tt> with your actual path here. If you're not using bash as your shell, the
+	command would be <tt>setenv BLAS_LIBS '...'</tt> or similar. After this, the <tt>configure</tt> scripts for
+	SuperLU / ARPACK / wgms3d should no longer complain about a missing BLAS library.</p>
+
+      <p>Finally, when executing wgms3d, the dynamic linker path should point to the directory containing the MKL
+	libraries.</p>
+      <div class="codebox">
+	export LD_LIBRARY_PATH=/path/to/MKL/11.0/069/mkl/lib/em64t
+      </div>
+
+    </div>
+
+    <div class="wrapper">
+      <h2>Installation of parallel (SLEPc-based) wgms3d</h2>
+
+      <p>To build wgms3d with SLEPc, you don't need SuperLU and ARPACK as described above. Instead, the build involves
+      essentially these steps:</p>
+      <ul>
+	<li><p>Build PETSc. Note: you must decide during configuration whether you want a real or a complex build. While
+	  the classical ARPACK-based wgms3d executable decides automatically at run-time whether a complex solver needs
+	  to be used or the real (faster) one is sufficient, for the PETSc-based build you need to decide this in
+	  advance. If you know that you only simulate straight waveguides with lossless materials, choose the real
+	  PETSc; otherwise build a complex one. The complex build can handle all waveguides, but uses more resources
+	  (time and memory) than necessary for straight waveguides and lossless materials.</p>
+
+	  <p>I used the following to build an optimized complex PETSc 3.4.3:
+	  <tt>./configure --with-mpi --download-scalapack --download-metis --download-parmetis --download-mumps
+	  --download-superlu_dist --with-clanguage=c++ --with-debugging=0 COPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3
+	  -march=native' CXXOPTFLAGS='-O3 -march=native' --with-scalar-type=complex</tt>
+	  </p>
+	</li>
+
+	<li><p>Build SLEPc. Set the environment variable SLEPC_DIR to the directory where you unpacked the SLEPc sources
+	    (I used v3.4.3); set PETSC_DIR to the directory where you compiled PETSc in the previous step; set
+	    PETSC_ARCH to arch-linux2-cxx-opt (or whatever is adequate for your machine). Then a simple "./configure" in
+	    the SLEPc source directory should find everything automatically.</p>
+	</li>
+
+	<li><p>Build wgms3d. Set the environment variables as described in the previous step for SLEPc, then
+	    run <tt>CPPFLAGS="-O3 -march=native" ./configure --with-mpi --with-petsc --with-slepc</tt>.</p>
+	</li>
+
+      </ul>
+
+    </div>
+    
+    <div class="wrapper">
+      <div style="text-align: right;">
+	Copyright (C) 2005-2014
+	<a href="http://www.soundtracker.org/raw/">Michael Krause</a>
+	&lt;<a href="mailto:m.krause@tu-harburg.de">m.krause@tu-harburg.de</a>&gt;
+      </div>
+      <div style="float:right;">
+	<a href="http://validator.w3.org/check?uri=referer">
+	  <img style="margin:0;border:0;padding:5px;width:88px;height:31px"
+	       src="http://www.w3.org/Icons/valid-html401"
+	       alt="Valid HTML 4.01 Transitional" height="31" width="88"></a>
+	<a href="http://jigsaw.w3.org/css-validator/check/referer">
+	  <img style="margin:0;border:0;padding:5px 0 5px 5px;width:88px;height:31px"
+	       src="http://jigsaw.w3.org/css-validator/images/vcss"
+	       alt="Valid CSS"></a>
+      </div>
+      <div style="float:left;">
+	<a href="http://freecode.com/projects/wgms3d">
+	  <img style="margin:3px;border:1px solid gray;padding:1px;width:70px;height:31px"
+	       src="freecode_logo.png"
+	       alt="Follow on freecode" height="31" width="66"></a>
+      </div>
+    </div>
+
+  </body>
+</html>
+
+<!-- Local Variables: -->
+<!-- fill-column: 120 -->
+<!-- End: -->

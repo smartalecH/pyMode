@@ -1,0 +1,73 @@
+* { margin:0; padding:0; }
+p { margin: 15px 0 15px 0; }
+
+ul {
+    list-style-position: outside;
+}
+li {
+    margin-left: 2em;
+}
+h2,h3 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+body
+{
+    background-color: #dddddd;
+    font-family: 'trebuchet ms', arial, helvetica, sans-serif;
+    font-size: 1.0em;
+    text-align: center;
+    margin: 10px 0 10px 0;
+}
+
+#header
+{
+    background-color: #ffffff;
+    width: 800px;
+    margin: 0 auto 1em auto;
+    padding: 1em 1em;
+    text-align: center;
+}
+
+.wrapper
+{
+    background-color: #ffffff;
+    width: 800px;
+    margin: 0 auto 1em auto;
+    padding: 1em 1em;
+    text-align: left;
+    overflow: hidden;
+}
+
+.spacedout li
+{
+    margin-bottom: .5em;
+}
+
+pre.codebox {
+    padding: 0 0;
+    margin: 0 0;
+    border: 0;
+}
+
+div.codebox {
+    border: 2px dotted gray;
+    padding: 1em 1em;
+    background-color: #ddddff;
+    font-family: monospace;
+}
+
+/* IE doesn't like to pad IMGs directly, so we're enclosing them
+   inside a padded DIV. */
+div.figure {
+    float: right;
+    margin: 20px 0px 10px 10px;
+    padding: 10px;
+    border: 2px solid gray;
+}
+
+.clearfloats
+{
+    clear: both;
+}

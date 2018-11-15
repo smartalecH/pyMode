@@ -1,0 +1,9 @@
+
+The parallel version isn't as parallel as it could be; matrix setup
+and computation of secondary (derived) field components is done in the
+main process only. Improve this.
+
+Do systematic scaling tests of the parallel version.
+
+Add automatic unit tests to the build process.
+

@@ -1,0 +1,153 @@
+
+(This file only lists major user-visible changes; details are in
+ChangeLog)
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-2.0 (17-May-2014):
+
+* Introduced a new parallel / distributed eigensolver backend based on
+  MPI / PETSc / SLEPc for large-scale simulations. This work was
+  inspired by initial experiments done by Henry Wu ('pwgms3d').
+
+* Can choose during configuration stage whether to use the new
+  MPI-based parallel eigensolver backend or the old one based on
+  SuperLU / ARPACK.
+
+* Fixed some of the Matlab scripts for compatibility with GNU Octave.
+
+* Improved modularity of C++ code.
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-1.2.2 (22-Sep-2013):
+
+* Fixed source code so that it better complies with the C++11
+  standard.  Now even compiles with clang. (Thanks to Zhanghua Han for
+  pointing out a compilation problem.)
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-1.2.1 (17-Aug-2013):
+
+* Updated installation instructions and build script for the ARPACK-NG
+  library distribution. It is no longer recommended to use my old
+  self-packaged and slightly modified version of ARPACK. This
+  simplifies installation and makes wgms3d work on platforms where it
+  didn't work before (thanks to Thach Nguyen for the reports).
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-1.2 (9-Jul-2012):
+
+* In the semi-vectorial calculation mode, derived fields (transverse E
+  field + longitudinal E and H fields) can now be exported. Also,
+  added a new test script 'tests/semivectorial/', which compares the
+  full-vectorial (exact) and semi-vectorial (approximate) modes in a
+  waveguide at different wavelengths. As expected, the error of the SV
+  approximation becomes smaller towards shorter wavelengths.
+
+* Added a new test script 'tests/complex_modes/'. It checks whether
+  complex modes are calculated correctly by reproducing the
+  effective-index data from Fig. 4b of Strube's 1985 MTT article.
+
+* Extended the script 'matlab/wgms3d_mgp_rib_waveguide.m'. It can now
+  generate strip waveguides or "photonic wires", too. Just set the
+  etch depth D to the same value as the central rib height H. See
+  documentation inside that script.
+
+* Fixed the script 'matlab/wgms3d_plot_refractive_index.m'. It now
+  correctly loads 'epsis.bin' instead of 'epsis.txt'.
+
+* Fixed handling of comment lines in MGP files (those starting with a
+  '#' sign).
+
+* The source code has been cleaned up and reorganized. Global
+  variables have been removed completely. Everything is now
+  encapsulated in C++ classes.
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-1.1.0 (22-Jun-2011):
+
+* Added support for lossy materials. Inside the geometry (.mgp) file,
+  you may now either specify the refractive index as a single real
+  number (as before), or as a pair of the form "(nr,ni)", where nr and
+  ni are the real and imaginary parts of the refractive index. For an
+  example, see the new tests/lossy_materials/ test script.
+
+* Added new Matlab script, matlab/wgms3d_mgp_rib_waveguide.m, for
+  generating rib waveguide structures.
+
+* Added new Matlab script, matlab/wgms3d_calc_group_index.m, that
+  calculates the group index of a mode from its field distribution
+  (only for non-dispersive materials).
+
+* No longer exporting 'epsis.txt' with the -e switch, but 'epsis.bin'
+  instead.
+
+* Added missing script matlab/wgms3d_tracemodes_update_parameter.m.
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-1.0.2 (31-May-2011):
+
+* Added scalar (weakly-guiding) computation mode (command-line switch
+  "-p"), corresponding new Matlab function "wgms3d_plot_scalar", and
+  test case in tests/fiber_convergence/lpmodes.m
+
+* Added new Matlab function "wgms3d_tracemodes" to facilitate
+  parameter-continuation studies. For usage, see examples in
+  tests/2005_JSTQE_Prkna/ and tests/2009_PTL_Nguyen/.
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-1.0.1 (16-Feb-2011):
+
+* Added a missing file; now matlab/wgms3d_import_output.m actually
+  works.
+
+* Added two new test cases:
+
+  - tests/fiber_convergence: tests for convergence of the effective
+    indices of a straight circular step-index fiber (produces the
+    results of Fig. 3 from the JLT paper describing this mode solver).
+
+  - tests/2009_PTL_Nguyen: reproduces results from a 2009 paper by
+    Nguyen et al. in Photonics Technology Letters, where the leakage
+    losses of the fundamental quasi-TM mode of a straight rib
+    waveguide are analyzed.
+
+* For consistency with the rest of the code, the exported
+  discretization grids are now called 'r.txt' and 'z.txt' for the rho-
+  and z-axis grids, respectively. Similarly, the Matlab structure
+  generated by wgms3d_load_mode_field.m has fields 'r' and 'z' instead
+  of 'x' and 'y' now. Update your scripts.
+
+* Further cleaned up source code.
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-1.0.0 (08-Feb-2011):
+
+* Completely new code for handling Bézier-type dielectric
+  interfaces. This makes the computation of structures with tightly
+  curved Bézier interfaces much more robust. It also removes the
+  excessive geometry warnings that were output by previous versions of
+  wgms3d.
+
+* Source code cleaned up.
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-0.8.9 (27-Jan-2011):
+
+* Simplified installation: wgms3d no longer depends on lib2geom.
+
+----------------------------------------------------------------------
+
+What is new in wgms3d-0.8.8 (13-Jan-2011):
+
+* Initial public release.
+
+----------------------------------------------------------------------
