@@ -48,9 +48,9 @@ class Simulation:
         else:
             command  = "cd " + self.folderName + " && wgms3d"    
         
-        command += " -U xx.txt -V yy.txt"                        # add grid info
         command += " -g {}".format(self.geomFileName)            # add geometry info
         command += "-l {:e}".format(self.wavelength)             # add wavelength info
+        command += " -U xx.txt -V yy.txt"                        # add grid info
         command += " -e -E -F -G -H"                             # specify to output all fields
         command += " -n {:d}".format(self.numModes)              # specify number of modes to solve for
         
