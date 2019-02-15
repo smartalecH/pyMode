@@ -2,12 +2,7 @@ import subprocess
 from subprocess import Popen, PIPE
 import json
 import numpy as np
-
-# --------------------------------------------------------------------- #
-# Constants
-# --------------------------------------------------------------------- #
-
-
+import os
 
 # --------------------------------------------------------------------- #
 # Simulation Class
@@ -23,19 +18,32 @@ class Simulation:
         self.xGrid = xGrid
         self.yGrid = yGrid
         self.radius = radius
+        self.eigStart = eigStart
         self.boundaries = boundaries
+        
+
+        self.filenamePrefix = filenamePrefix
 
         # ensure folder is created (if requested)
+        self.folderName = folderName
+        if folderName is not "":
+            self.folderName = folderName + '/'
+            if not os.path.exists(folderName):
+                os.makedirs(folderName)
+        
 
         return
     def run(self):
         # write the grid files
-
+        self.makeGrid()
         # write the geometry file
         self.writeGeometry()
 
         # formulate the shell command
-        command  = "cd " + self.output_folder + " && wgms3d"     # initialize
+        if self.folderName is not "":
+            command = "wgms3d"
+        else:
+            command  = "cd " + self.folderName + " && wgms3d"    
         command += " -U xx.txt -V yy.txt"                        # add grid info
         command += " -g {}".format(self.geomFileName)            # add geometry info
         command += "-l {:e}".format(self.wavelength)             # add wavelength info
@@ -58,7 +66,7 @@ class Simulation:
     def getFieldComponent(self,basename,modeNumber):
         if self.simRun:
 
-            filename = '{}/{}-{}.bin'.format(self.folderName, basename, modeNumber)
+            filename = '{}{}-{}.bin'.format(self.folderName, basename, modeNumber)
             numX = self.xGrid.shape[0]
             numY = self.yGrid.shape[0]
             data = np.fromfile(filename, np.float64)
@@ -126,7 +134,7 @@ class Simulation:
             raise
     def getEps(self):
         if self.simRun:
-            filename = '{}/epsis.bin'.format(directory)
+            filename = '{}epsis.bin'.format(directory)
             numX = self.xGrid.shape[0]
             numY = self.yGrid.shape[0]
             data = np.fromfile(filename, np.float64)
@@ -158,7 +166,7 @@ class Simulation:
         fileContents = ''
 
         # Run through all the components and write them to the file
-        for k in len(self.geometry):
+        for k in range(len(self.geometry)):
             fileContents += self.geometry[k].writeContents(self.wavelength)
         
         # End and write the file
@@ -166,5 +174,5 @@ class Simulation:
         with open(self.geomFileName, "w") as text_file:
             text_file.write(fileContents)
     def makeGrid(self):
-        np.savetxt(self.folderName + '/' +'xx.txt',np.insert(self.xGrid, 0, self.xGrid.size, axis=0))
-        np.savetxt(self.folderName + '/' +'yy.txt',np.insert(self.yGrid, 0, self.yGrid.size, axis=0))
+        np.savetxt(self.folderName +'xx.txt',np.insert(self.xGrid, 0, int(self.xGrid.size), axis=0))
+        np.savetxt(self.folderName +'yy.txt',np.insert(self.yGrid, 0, int(self.yGrid.size), axis=0))

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Materials Library
 
-import pyMode.geom as mp
+import pyMode as mp
 
 # default unit length is 1 um
 um_scale = 1.0
