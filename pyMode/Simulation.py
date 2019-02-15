@@ -43,7 +43,7 @@ class Simulation:
         self.writeGeometry()
 
         # formulate the shell command
-        if self.folderName is not "":
+        if self.folderName is "":
             command = "wgms3d"
         else:
             command  = "cd " + self.folderName + " && wgms3d"    
