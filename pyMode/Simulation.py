@@ -209,7 +209,7 @@ class Magnetic(Boundaries):
         return command
 
 class PML(Boundaries):
-    def __init__(self, location, thickness=1, strength=1.0, *args, **kwargs):
+    def __init__(self, location, thickness=2, strength=1.0, *args, **kwargs):
         self.location = location
         self.thickness = thickness
         self.strength = strength
