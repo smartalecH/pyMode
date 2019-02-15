@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE
 import json
 import numpy as np
 import os
+from enum import Enum
 
 # --------------------------------------------------------------------- #
 # Simulation Class
@@ -34,8 +35,10 @@ class Simulation:
 
         return
     def run(self):
+
         # write the grid files
         self.makeGrid()
+
         # write the geometry file
         self.writeGeometry()
 
@@ -44,14 +47,19 @@ class Simulation:
             command = "wgms3d"
         else:
             command  = "cd " + self.folderName + " && wgms3d"    
+        
         command += " -U xx.txt -V yy.txt"                        # add grid info
         command += " -g {}".format(self.geomFileName)            # add geometry info
         command += "-l {:e}".format(self.wavelength)             # add wavelength info
         command += " -e -E -F -G -H"                             # specify to output all fields
         command += " -n {:d}".format(self.numModes)              # specify number of modes to solve for
+        
         if self.eigStart is not None:
             command += " -s {:e}".format(self.eigStart)          # specify initial index guess
+        
         # Parse the boundary conditions
+        for k in range(len(self.boundaries)):
+            command += self.boundaries[k].output_command()
 
         print(command)
 
@@ -176,3 +184,35 @@ class Simulation:
     def makeGrid(self):
         np.savetxt(self.folderName +'xx.txt',np.insert(self.xGrid, 0, int(self.xGrid.size), axis=0))
         np.savetxt(self.folderName +'yy.txt',np.insert(self.yGrid, 0, int(self.yGrid.size), axis=0))
+    
+# --------------------------------------------------------------------- #
+# Boundary Classes
+# --------------------------------------------------------------------- #
+class Locations(Enum):
+    N = 'n'
+    S = 's'
+    E = 'e'
+    W = 'w'
+
+class Boundaries():
+    def __init__(self, location, *args, **kwargs):
+        self.location = location
+    def output_command(self):
+        command = ""
+        return command
+
+class Magnetic(Boundaries):
+    def __init__(self, location, *args, **kwargs):
+        self.location = location
+    def output_command(self):
+        command = " -M {}".format(self.location.value)
+        return command
+
+class PML(Boundaries):
+    def __init__(self, location, thickness=1, strength=1, *args, **kwargs):
+        self.location = location
+        self.thickness = thickness
+        self.strength = strength
+    def output_command(self):
+        command = " -P {}:{}:{}".format(self.location.value,self.thickness,self.strength)
+        return command

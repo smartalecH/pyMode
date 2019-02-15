@@ -2,6 +2,12 @@ from pyMode.materials import Si, SiO2
 import pyMode as pm
 import numpy as np
 
+m = pm.PML(pm.Locations.N)
+e = pm.PML(pm.Locations.E)
+f = pm.Magnetic(pm.Locations.S)
+
+boundaries = [m,e,f]
+
 waveguide = pm.Rectangle(
     center=pm.Vector3(0,0),
     size = pm.Vector3(1,1),
@@ -22,7 +28,8 @@ sim = pm.Simulation(
     numModes=numModes,
     xGrid=xGrid,
     yGrid=yGrid,
-    radius=radius
+    radius=radius,
+    boundaries = boundaries
     )
 
 sim.run()
