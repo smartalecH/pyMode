@@ -29,7 +29,8 @@ sim = pm.Simulation(
     xGrid=xGrid,
     yGrid=yGrid,
     radius=radius,
-    boundaries = boundaries
+    boundaries = boundaries,
+    background = SiO2
     )
 
 sim.run()

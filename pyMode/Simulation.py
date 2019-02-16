@@ -4,13 +4,14 @@ import json
 import numpy as np
 import os
 from enum import Enum
+import pyMode as pm
 
 # --------------------------------------------------------------------- #
 # Simulation Class
 # --------------------------------------------------------------------- #
 
 class Simulation:
-    def __init__(self, geometry, wavelength, numModes, xGrid, yGrid, radius, eigStart=None, boundaries=[], filenamePrefix = '', folderName = '', *args, **kwargs):
+    def __init__(self, geometry, wavelength, numModes, xGrid, yGrid, radius, eigStart=None, boundaries=[], background = pm.AIR, filenamePrefix = '', folderName = '', *args, **kwargs):
         # initialize all variables
         self.simRun = False
         self.geometry = geometry
@@ -21,6 +22,7 @@ class Simulation:
         self.radius = radius
         self.eigStart = eigStart
         self.boundaries = boundaries
+        self.background = background
         
 
         self.filenamePrefix = filenamePrefix
@@ -47,9 +49,13 @@ class Simulation:
             command = "wgms3d"
         else:
             command  = "cd " + self.folderName + " && wgms3d"    
-        
+
+        # add radius of curvature
+        if self.radius is not 0:
+            command += "R {:e}.format(self.radius)"
+
         command += " -g {}".format(self.geomFileName)            # add geometry info
-        command += " -l {:e}".format(self.wavelength)             # add wavelength info
+        command += " -l {:e}".format(self.wavelength)            # add wavelength info
         command += " -U xx.txt -V yy.txt"                        # add grid info
         command += " -e -E -F -G -H"                             # specify to output all fields
         command += " -n {:d}".format(self.numModes)              # specify number of modes to solve for
@@ -171,7 +177,8 @@ class Simulation:
 
         # Initialize the geometry file
         self.geomFileName = self.folderName + self.filenamePrefix + "geometry.mgp"
-        fileContents = ''
+        print(self.background.get_n(1/self.wavelength))
+        fileContents = 'n ({:e},{:e}) \n'.format(np.real(self.background.get_n(1/self.wavelength)),np.imag(self.background.get_n(1/self.wavelength)))
 
         # Run through all the components and write them to the file
         for k in range(len(self.geometry)):
