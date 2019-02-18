@@ -111,8 +111,91 @@ class Rectangle():
         return fileContents
 
 class Trapezoid():
-    def __init__(self, *args, **kwargs):
-        return super().__init__(*args, **kwargs)
+    def __init__(self, center, topFace,thickness,sidewallAngle, core, cladding, rc=0, *args, **kwargs):
+        self.centerX = center.x
+        self.centerY = center.y
+        self.topFace  = topFace
+        self.thickness = thickness
+        self.sidewallAngle = sidewallAngle
+        self.core = core
+        self.cladding = cladding
+        self.rc = rc
+
+        self.bottomFace = topFace + 2*(thickness/np.tan(sidewallAngle))
+
+        '''
+                                      (x1,y1) ----------- (x2,y2)
+                                             /            \
+                                            /              \
+                                           /                \
+                                 (x3,y3)  --------------------  (x4,y4)
+        '''
+
+        self.X1 = self.centerX - self.topFace/2
+        self.X2 = self.centerX + self.topFace/2
+        self.X3 = self.centerX - self.bottomFace/2
+        self.X4 = self.centerX + self.bottomFace/2
+        self.Y1 = self.centerY + self.thickness / 2
+        self.Y2 = self.Y1
+        self.Y3 = self.centerY - self.thickness / 2
+        self.Y4 = self.Y3
+    def writeContents(self,wavelength):
+        Lines = [
+            [[self.X1 + self.rc,self.Y1],[self.X2-self.rc,self.Y2]], # top line
+            [[self.X3 + self.rc,self.Y3],[self.X4-self.rc,self.Y4]], # bottom line
+            [[self.X3,self.Y3 + self.rc],[self.X1,self.Y1-self.rc]], # left line
+            [[self.X4,self.Y4 + self.rc],[self.X2,self.Y2-self.rc]]  # right line
+        ]
+        if self.rc > 0:
+            print('Rounded corners not supported for trapezoids yet!')
+            raise
+        # TODO: Enable rounded corners
+        Corners = [
+            [[],[],[]], # top left
+            [[],[],[]], # bottom left
+            [[],[],[]], # top right
+            [[],[],[]]  # bottom right
+        ]
+
+        cladding = self.cladding.get_n(1/wavelength)
+        core     = self.core.get_n(1/wavelength)
+        Indices = [
+            [cladding,core],      # top line
+            [core,cladding],      # bottom line
+            [cladding,core],      # left line
+            [core,cladding]       # right line
+        ]
+
+        fileContents = ""
+        for k in range(len(Lines)):
+
+            X1 = Lines[k][0][0]
+            Y1 = Lines[k][0][1]
+            X2 = Lines[k][1][0]
+            Y2 = Lines[k][1][1]
+            nLeft  = Indices[k][0]
+            nRight = Indices[k][1]
+            currentLine = "l ({:e},{:e}) ({:e},{:e}) {:e} {:e} {:e} {:e}\n".format(
+                nLeft.real,nLeft.imag,nRight.real,nRight.imag,X1,Y1,X2,Y2
+            )
+            fileContents += (currentLine)
+
+        if self.rc > 0:
+            for k in range(len(Lines)):
+
+                X1 = Corners[k][0][0]
+                Y1 = Corners[k][0][1]
+                X2 = Corners[k][1][0]
+                Y2 = Corners[k][1][1]
+                X3 = Corners[k][2][0]
+                Y3 = Corners[k][2][1]
+                nLeft  = Indices[k][0]
+                nRight = Indices[k][1]
+                currentLine = "b ({:e},{:e}) ({:e},{:e}) {:e} {:e} {:e} {:e} {:e} {:e}\n".format(
+                    nLeft.real,nLeft.imag,nRight.real,nRight.imag,X1,Y1,X2,Y2,X3,Y3
+                )
+                fileContents += (currentLine)
+        return fileContents
 # --------------------------------------------------------------------- #
 # Material Classes
 # --------------------------------------------------------------------- #

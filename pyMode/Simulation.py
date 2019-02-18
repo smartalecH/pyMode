@@ -11,7 +11,7 @@ import pyMode as pm
 # --------------------------------------------------------------------- #
 
 class Simulation:
-    def __init__(self, geometry, wavelength, numModes, xGrid, yGrid, radius, eigStart=None, boundaries=[], background = pm.AIR, filenamePrefix = '', folderName = '', *args, **kwargs):
+    def __init__(self, geometry, wavelength, numModes, xGrid, yGrid, radius = 0, eigStart=None, boundaries=[], background = pm.AIR, filenamePrefix = '', folderName = '', *args, **kwargs):
         # initialize all variables
         self.simRun = False
         self.geometry = geometry
@@ -79,7 +79,7 @@ class Simulation:
         return
     def getFieldComponent(self,basename,modeNumber):
         if self.simRun:
-
+            modeNumber = "{0:0=2d}".format(modeNumber)
             filename = '{}{}-{}.bin'.format(self.folderName, basename, modeNumber)
             numX = self.xGrid.shape[0]
             numY = self.yGrid.shape[0]
@@ -93,7 +93,7 @@ class Simulation:
             real_part_indices = np.arange(0,data.shape[0]-1,2)
             imag_part_indices = real_part_indices + 1
             data = data[real_part_indices] + 1j*data[imag_part_indices]
-            data = (data.reshape((numY,numX)))
+            data = data.reshape((numY,numX),order='C')
 
             return k0, data
         else:
@@ -115,7 +115,7 @@ class Simulation:
             k0_modes = np.zeros((self.numModes,),dtype=np.complex128)
 
             for mode_iter in range(self.numModes):
-                modeNumber = "{0:0=2d}".format(mode_iter)
+                modeNumber = mode_iter
                 # Record data for Hr
                 k0, data = self.getFieldComponent('hr', modeNumber)
                 waveNumbers[mode_iter] = k0
@@ -148,16 +148,16 @@ class Simulation:
             raise
     def getEps(self):
         if self.simRun:
-            filename = '{}epsis.bin'.format(directory)
-            numX = self.xGrid.shape[0]
-            numY = self.yGrid.shape[0]
+            filename = '{}epsis.bin'.format(self.folderName)
+            numX = self.xGrid.size
+            numY = self.yGrid.size
             data = np.fromfile(filename, np.float64)
 
             # Parse the file
             real_part_indices = np.arange(0,data.shape[0]-1,2)
             imag_part_indices = real_part_indices + 1
             data = data[real_part_indices] + 1j*data[imag_part_indices]
-            data = (data.reshape((numY,numX)))
+            data = data.reshape((numY,numX),order='C')
             return data
         else:
             print('You must run a simulation first!')
