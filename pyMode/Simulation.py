@@ -52,9 +52,9 @@ class Simulation:
 
         # add radius of curvature
         if self.radius is not 0:
-            command += "R {:e}.format(self.radius)"
+            command += " -R {:e}".format(self.radius)
 
-        command += " -g {}".format(self.geomFileName)            # add geometry info
+        command += " -g {}".format(self.filenamePrefix + "geometry.mgp")            # add geometry info
         command += " -l {:e}".format(self.wavelength)            # add wavelength info
         command += " -U xx.txt -V yy.txt"                        # add grid info
         command += " -e -E -F -G -H"                             # specify to output all fields
@@ -77,7 +77,7 @@ class Simulation:
 
         self.simRun = True
         return
-    def getFieldComponent(self,basename,modeNumber):
+    def getFieldComponent(self,basename,modeNumber,loadField=True):
         if self.simRun:
             modeNumber = "{0:0=2d}".format(modeNumber)
             filename = '{}{}-{}.bin'.format(self.folderName, basename, modeNumber)
@@ -90,12 +90,15 @@ class Simulation:
             data = data[2:]
 
             # Parse the file
-            real_part_indices = np.arange(0,data.shape[0]-1,2)
-            imag_part_indices = real_part_indices + 1
-            data = data[real_part_indices] + 1j*data[imag_part_indices]
-            data = data.reshape((numY,numX),order='C')
+            if loadField:
+                real_part_indices = np.arange(0,data.shape[0]-1,2)
+                imag_part_indices = real_part_indices + 1
+                data = data[real_part_indices] + 1j*data[imag_part_indices]
+                data = data.reshape((numY,numX),order='C')
 
-            return k0, data
+                return k0, data
+            else:
+                return k0
         else:
             print('You must run a simulation first!')
             raise
@@ -167,7 +170,7 @@ class Simulation:
             waveNumbers = np.zeros((self.numModes,),dtype=np.complex128)
             for mode_iter in range(self.numModes):
                 modeNumber = "{0:0=2d}".format(mode_iter)
-                k0, data = self.getFieldComponent('hr', modeNumber)
+                k0 = self.getFieldComponent('hr', mode_iter,loadField=False)
                 waveNumbers[mode_iter] = k0
             return waveNumbers
         else:
@@ -195,7 +198,7 @@ class Simulation:
 # --------------------------------------------------------------------- #
 # Boundary Classes
 # --------------------------------------------------------------------- #
-class Locations(Enum):
+class Location(Enum):
     N = 'n'
     S = 's'
     E = 'e'
