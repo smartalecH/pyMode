@@ -6,7 +6,7 @@ Make sure you have WGMS3D installed first and that the compiled program is acces
 
 Bibtex citation:
 
-'''
+```
 @misc{hammond_pymode_2019,
 	title={pyMode},
 	author={Alec M. Hammond},
@@ -14,4 +14,4 @@ Bibtex citation:
 	publisher={GitHub},
 	howpublished={{https://github.com/smartalecH/pyMode}}
 }
-'''
+```
