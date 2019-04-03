@@ -5,6 +5,7 @@ import numpy as np
 import os
 from enum import Enum
 import pyMode as pm
+import matplotlib.pyplot as plt
 
 # --------------------------------------------------------------------- #
 # Simulation Class
@@ -194,6 +195,11 @@ class Simulation:
     def makeGrid(self):
         np.savetxt(self.folderName +'xx.txt',np.insert(self.xGrid, 0, int(self.xGrid.size), axis=0))
         np.savetxt(self.folderName +'yy.txt',np.insert(self.yGrid, 0, int(self.yGrid.size), axis=0))
+    
+    def plotGeometry(self):
+        eps = self.getEps()
+        X,Y = np.meshgrid(self.xGrid,self.yGrid)
+        plt.pcolor(X,Y,np.real(eps), cmap='gray',alpha=0.5)
     
 # --------------------------------------------------------------------- #
 # Boundary Classes
