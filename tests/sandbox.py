@@ -5,9 +5,9 @@ from scipy.interpolate import interp1d
 from matplotlib import pyplot as plt
 import pscan
 
-m = pm.PML(pm.Locations.N)
-e = pm.PML(pm.Locations.E)
-s = pm.Magnetic(pm.Locations.S)
+m = pm.PML(pm.Location.N)
+e = pm.PML(pm.Location.E)
+s = pm.Magnetic(pm.Location.S)
 
 #makes grid that gives locations for grid for FDTD
 #takes in set locations, and densities at those locations
