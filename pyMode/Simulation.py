@@ -3,14 +3,13 @@
 Alec Hammond. 2019-02-14.
 """
 
-import subprocess
+
 from subprocess import Popen, PIPE
-import json
-import numpy as np
-import os
 from enum import Enum
-import pyMode as pm
+import os
+import numpy as np
 import matplotlib.pyplot as plt
+import pyMode as pm
 
 
 # --------------------------------------------------------------------- #
@@ -19,7 +18,9 @@ import matplotlib.pyplot as plt
 
 
 class Simulation:
-    def __init__(self, geometry, wavelength, numModes, xGrid, yGrid, radius=0, eigStart=None, boundaries=[], background=pm.AIR, filenamePrefix='', folderName=''):
+    """Class defining parameters for a simulation with WGMS3D, as well as methods for accessing results."""
+    def __init__(self, geometry, wavelength, numModes, xGrid, yGrid, radius=0, eigStart=None, boundaries=None,
+                 background=pm.AIR, filenamePrefix='', folderName=''):
         # initialize all variables
         self.simRun = False
         self.geometry = geometry
@@ -29,10 +30,11 @@ class Simulation:
         self.yGrid = yGrid
         self.radius = radius
         self.eigStart = eigStart
-        self.boundaries = boundaries
+        self.boundaries = [] if boundaries is None else boundaries
         self.background = background
 
         self.filenamePrefix = filenamePrefix
+        self.geomFileName = None
 
         # ensure folder is created (if requested)
         self.folderName = folderName
@@ -42,7 +44,7 @@ class Simulation:
                 os.makedirs(folderName)
 
     def run(self):
-        """Perform simulation."""
+        """Perform the simulation using WGMS3D."""
         # write the grid files
         self.makeGrid()
 
@@ -80,9 +82,21 @@ class Simulation:
         print("".join(chr(x) for x in stderr))
         print("".join(chr(x) for x in stdout))
 
+        # mark the simulation as completed, allowing methods to access results
         self.simRun = True
 
     def getFieldComponent(self, basename, modeNumber, loadField=True):
+        """Get the results for the specified field from the output folder.
+
+        Args:
+            basename (str): name of field component, e.g. 'hz'.
+            modeNumber (int): number assigned to the specific mode desired.
+            loadField (bool): if True, return the field component of the data. If False, only return the values
+                              corresponding to wave number.
+        Returns:
+            (complex): wave number.
+            (np.ndarray): field component requested. Returned if loadField is set.
+        """
         if not self.simRun:
             raise ValueError('you must run a simulation first')
 
@@ -107,10 +121,21 @@ class Simulation:
         return k0
 
     def getFields(self):
+        """Return all six fields for each mode.
+
+        Returns:
+            (np.ndarray): wave numbers for each mode.
+            (np.ndarray): the field profile for H over r.
+            (np.ndarray): the field profile for H over z.
+            (np.ndarray): the field profile for H over phi.
+            (np.ndarray): the field profile for E over r.
+            (np.ndarray): the field profile for E over z.
+            (np.ndarray): the field profile for E over phi.
+        """
         if not self.simRun:
             raise ValueError('you must run a simulation first')
 
-        waveNumbers = np.zeros((self.numModes,),dtype=np.complex128)
+        waveNumbers = np.zeros((self.numModes,), dtype=np.complex128)
 
         Hr = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
         Hz = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
@@ -120,7 +145,6 @@ class Simulation:
         Ez = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
         Ephi = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
 
-        Eps = self.getEps().T
         k0_modes = np.zeros((self.numModes,), dtype=np.complex128)
 
         for mode_iter in range(self.numModes):
@@ -154,6 +178,11 @@ class Simulation:
         return waveNumbers, Hr, Hz, Hphi, Er, Ez, Ephi
 
     def getEps(self):
+        """Get the eps (???) for the simulation.
+
+        Returns:
+            (np.ndarray): eps (???).
+        """
         if not self.simRun:
             raise ValueError('you must run a simulation first')
 
@@ -170,21 +199,28 @@ class Simulation:
         return data
 
     def getWavenumbers(self):
+        """Get the wave numbers for the simulation.
+
+        Returns:
+            (np.ndarray): wave numbers for each mode.
+        """
         if not self.simRun:
             raise ValueError('you must run a simulation first')
 
         waveNumbers = np.zeros((self.numModes,), dtype=np.complex128)
         for mode_iter in range(self.numModes):
             modeNumber = "{0:0=2d}".format(mode_iter)
-            k0 = self.getFieldComponent('hr', mode_iter, loadField=False)
+            k0 = self.getFieldComponent('hr', modeNumber, loadField=False)
             waveNumbers[mode_iter] = k0
         return waveNumbers
 
     def writeGeometry(self):
-        # Initialize the geometry file
+        """Initialize the geometry file for use by WGMS3D."""
         self.geomFileName = self.folderName + self.filenamePrefix + "geometry.mgp"
         print(self.background.get_n(1 / self.wavelength))
-        fileContents = 'n ({:e},{:e}) \n'.format(np.real(self.background.get_n(1 / self.wavelength)), np.imag(self.background.get_n(1 / self.wavelength)))
+        fileContents = 'n ({:e},{:e}) \n'.format(
+            np.real(self.background.get_n(1 / self.wavelength)), np.imag(self.background.get_n(1 / self.wavelength))
+        )
 
         # Run through all the components and write them to the file
         for k in range(len(self.geometry)):
@@ -196,10 +232,12 @@ class Simulation:
             text_file.write(fileContents)
 
     def makeGrid(self):
+        """Create the grid files for use by WGMS3D."""
         np.savetxt(self.folderName +'xx.txt', np.insert(self.xGrid, 0, int(self.xGrid.size), axis=0))
         np.savetxt(self.folderName +'yy.txt', np.insert(self.yGrid, 0, int(self.yGrid.size), axis=0))
 
     def plotGeometry(self):
+        """Plot the eps (???) over the grid."""
         eps = self.getEps()
         X,Y = np.meshgrid(self.xGrid, self.yGrid)
         plt.pcolor(X, Y, np.real(eps), cmap='gray', alpha=0.5)
@@ -218,26 +256,34 @@ class Location(Enum):
 
 
 class Boundaries():
-    def __init__(self, location, *args, **kwargs):
+    """Base class for boundary conditions applied to simulations."""
+    def __init__(self, location):
         self.location = location
     def output_command(self):
+        """Return the flag syntax to specify the boundary condition to WGMS3D.
+
+        The default is no boundary, so no flag.
+        """
         command = ""
         return command
 
 
 class Magnetic(Boundaries):
-    def __init__(self, location, *args, **kwargs):
-        self.location = location
+    """Defines magnetic boundary conditions to WGMS3D."""
     def output_command(self):
+        """Return the flag syntax to specify the boundary condition to WGMS3D."""
         command = " -M {}".format(self.location.value)
         return command
 
 
 class PML(Boundaries):
-    def __init__(self, location, thickness=2, strength=1.0, *args, **kwargs):
-        self.location = location
+    """Defines PML boundary conditions to WGMS3D."""
+    def __init__(self, location, thickness=2, strength=1.0):
+        super(PML, self).__init__(location)
         self.thickness = thickness
         self.strength = strength
+
     def output_command(self):
+        """Return the flag syntax to specify the boundary condition to WGMS3D."""
         command = " -P {}:{}:{}".format(self.location.value, self.thickness, self.strength)
         return command
