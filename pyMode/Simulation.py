@@ -178,10 +178,10 @@ class Simulation:
         return waveNumbers, Hr, Hz, Hphi, Er, Ez, Ephi
 
     def getEps(self):
-        """Get the eps (???) for the simulation.
+        """Get the eps (the geometry) for the simulation.
 
         Returns:
-            (np.ndarray): eps (???).
+            (np.ndarray): eps (the geometry).
         """
         if not self.simRun:
             raise ValueError('you must run a simulation first')
@@ -237,11 +237,22 @@ class Simulation:
         np.savetxt(self.folderName +'yy.txt', np.insert(self.yGrid, 0, int(self.yGrid.size), axis=0))
 
     def plotGeometry(self):
-        """Plot the eps (???) over the grid."""
+        """Plot the eps (the geometry) over the grid."""
         eps = self.getEps()
         X,Y = np.meshgrid(self.xGrid, self.yGrid)
         plt.pcolor(X, Y, np.real(eps), cmap='gray', alpha=0.5)
 
+    def plotFields(self):
+        """Plots each of the field components"""
+        fields = self.getFields()
+        # Plot the fields
+        titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
+        for k in range(6):
+            plt.subplot(2,3,k+1)
+            plt.imshow(np.real(np.squeeze(fields[k+1])).transpose(), cmap='RdBu')
+            plt.colorbar()
+            plt.axis('off')
+            plt.title(titles[k])
 
 # --------------------------------------------------------------------- #
 # Boundary Classes
