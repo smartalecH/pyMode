@@ -209,7 +209,7 @@ class Simulation:
 
         waveNumbers = np.zeros((self.numModes,), dtype=np.complex128)
         for mode_iter in range(self.numModes):
-            modeNumber = "{0:0=2d}".format(mode_iter)
+            modeNumber = int("{0:0=2d}".format(mode_iter))
             k0 = self.getFieldComponent('hr', modeNumber, loadField=False)
             waveNumbers[mode_iter] = k0
         return waveNumbers
@@ -242,14 +242,22 @@ class Simulation:
         X,Y = np.meshgrid(self.xGrid, self.yGrid)
         plt.pcolor(X, Y, np.real(eps), cmap='gray', alpha=0.5)
 
-    def plotFields(self):
-        """Plots each of the field components"""
+    def plotFields(self,modeNum=1):
+        """Plots each of the field components
+
+        Args:
+            modeNum (int): index of mode to get. If self.numModes is 1, is basically ignored (only 1 mode has been found)
+                            Must be less than self.numModes"""
+
         fields = self.getFields()
         # Plot the fields
         titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
         for k in range(6):
             plt.subplot(2,3,k+1)
-            plt.imshow(np.real(np.squeeze(fields[k+1])).transpose(), cmap='RdBu')
+            if self.numModes == 1:
+                plt.imshow(np.real(np.squeeze(fields[k+1])).transpose(), cmap='RdBu')
+            else:
+                plt.imshow(np.real(np.squeeze(fields[k+1]))[modeNum-1,:,:].transpose(), cmap='RdBu')
             plt.colorbar()
             plt.axis('off')
             plt.title(titles[k])
