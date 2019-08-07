@@ -254,10 +254,14 @@ class Simulation:
         titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
         for k in range(6):
             plt.subplot(2,3,k+1)
+            #plt them, assuring that 0 is the middle value
             if self.numModes == 1:
-                plt.imshow(np.real(np.squeeze(fields[k+1])).transpose(), cmap='RdBu')
+                temp_field = np.real(np.squeeze(fields[k+1])).transpose()
             else:
-                plt.imshow(np.real(np.squeeze(fields[k+1]))[modeNum-1,:,:].transpose(), cmap='RdBu')
+                temp_field = np.real(np.squeeze(fields[k+1]))[modeNum-1,:,:].transpose()
+            
+            v = max( abs(temp_field.min()), abs(temp_field.max()) )
+            plt.imshow(temp_field, cmap='RdBu', vmin=-v, vmax=v)
             plt.colorbar()
             plt.axis('off')
             plt.title(titles[k])
