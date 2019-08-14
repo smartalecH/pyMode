@@ -249,6 +249,11 @@ class Simulation:
             modeNum (int): index of mode to get. If self.numModes is 1, is basically ignored (only 1 mode has been found)
                             Must be less than self.numModes"""
 
+        if not self.simRun:
+            raise ValueError('you must run a simulation first')
+        if modeNum > self.numModes:
+            raise ValueError("That mode hasn't been solved for")
+
         fields = self.getFields()
         # Plot the fields
         titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
