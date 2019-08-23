@@ -236,18 +236,27 @@ class Simulation:
         np.savetxt(self.folderName +'xx.txt', np.insert(self.xGrid, 0, int(self.xGrid.size), axis=0))
         np.savetxt(self.folderName +'yy.txt', np.insert(self.yGrid, 0, int(self.yGrid.size), axis=0))
 
-    def plotGeometry(self):
-        """Plot the eps (the geometry) over the grid."""
+    def plotGeometry(self, showGrid=True):
+        """Plot the eps (the geometry) over the grid.
+        
+        Args:
+            showGrid (bool): If True displays slicing grid. If False hides grids and doesn't necessarily display 'to size'. Defaults to True
+            """
         eps = self.getEps()
-        X,Y = np.meshgrid(self.xGrid, self.yGrid)
-        plt.pcolor(X, Y, np.real(eps), cmap='gray', alpha=0.5)
+        if showGrid:
+            X,Y = np.meshgrid(self.xGrid, self.yGrid)
+            plt.pcolor(X, Y, np.real(eps), cmap='gray', alpha=0.5)
+        else:
+            plt.imshow(np.real(eps), cmap='binary')
 
-    def plotFields(self,modeNum=1):
-        """Plots each of the field components
+    def plotFields(self,modeNum=1,showGeometry=False):
+        """Plots each of the field components. (Not necessarily to scale due to variability in slicing grid)
 
         Args:
             modeNum (int): index of mode to get. If self.numModes is 1, is basically ignored (only 1 mode has been found)
-                            Must be less than self.numModes"""
+                            Must be less than self.numModes
+            showGeometry (bool): If True overlays geometry on top of fields. False by default
+            """
 
         if not self.simRun:
             raise ValueError('you must run a simulation first')
@@ -256,7 +265,11 @@ class Simulation:
 
         fields = self.getFields()
         # Plot the fields
-        titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
+        #titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
+        titles = ['$H_x$','$H_y$','$H_z$','$E_x$','$E_y$','$E_z$']
+        if showGeometry:
+            eps = self.getEps()
+
         for k in range(6):
             plt.subplot(2,3,k+1)
             #plt them, assuring that 0 is the middle value
@@ -270,6 +283,9 @@ class Simulation:
             plt.colorbar()
             plt.axis('off')
             plt.title(titles[k])
+            if showGeometry:
+                plt.imshow(np.real(eps), cmap='binary', alpha=0.2)
+            
 
 # --------------------------------------------------------------------- #
 # Boundary Classes
