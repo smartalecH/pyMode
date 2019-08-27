@@ -271,21 +271,23 @@ class Simulation:
             eps = self.getEps()
 
         for k in range(6):
-            plt.subplot(2,3,k+1)
             #plt them, assuring that 0 is the middle value
             if self.numModes == 1:
                 temp_field = np.real(np.squeeze(fields[k+1])).transpose()
             else:
                 temp_field = np.real(np.squeeze(fields[k+1]))[modeNum-1,:,:].transpose()
-            
+            plt.subplot(2, 3, k+1, adjustable='box', aspect=temp_field.shape[0] / temp_field.shape[1])
+
             v = max( abs(temp_field.min()), abs(temp_field.max()) )
             plt.imshow(temp_field, cmap='RdBu', vmin=-v, vmax=v)
-            plt.colorbar()
+            plt.colorbar(fraction=0.046, pad=0.04)
             plt.axis('off')
             plt.title(titles[k])
             if showGeometry:
                 plt.imshow(np.real(eps), cmap='binary', alpha=0.2)
-            
+
+        plt.tight_layout(pad=0.2)
+
 
 # --------------------------------------------------------------------- #
 # Boundary Classes
