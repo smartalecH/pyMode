@@ -1,0 +1,4 @@
+# pip installation stuff
+*.pyc
+*.egg-info
+PKG-INFO
