@@ -275,7 +275,122 @@ class Trapezoid():
 
         return fileContents
 
+class RibWaveguide():
+    r"""Trapezoid defined in 2D space, with the material of the core and cladding specified.
 
+                                                 width
+                                      (x1,y1) ----------- (x2,y2)      |                         |
+                                             /            \            | etch_depth              |
+                                            /              \  (angle)  |                         |
+    (x7,y7) _______________________________/                \________________________  (x4,y4)   | thickness
+            |                          (x8,y8)            (x3,y3)                   |            |
+            |                                                                       |            |
+            |                                                                       |            |
+    (x6,y6) -------------------------------------------------------------------------  (x5,y5)   |
+                                                base
+
+    """
+    def __init__(self, center, width, thickness, sidewall_angle, etch_depth, base, core, cladding, rc=0):
+        """Initialize the trapezoid object.
+
+        Args:
+            center (coordinate): location of center of trapezoid in 2D space; must contain x and y attributes.
+            width (Number): width of top face of the trapezoid.
+            thickness (Number): thickness (y direction) of entire struct.
+            sidewall_angle (Number): angle of sidewall in radians. 0.5 * pi makes a rectangle.
+            etch_depth (Number): height of trapezoid
+            base (Number): width of slab section 
+            core (pyMode.materials.*): material of core.
+            cladding (pyMode.materials.*): material of cladding.
+            rc (???): roundness of corners.
+        """
+        self.centerX = center.x
+        self.centerY = center.y
+        self.width = width
+        self.thickness = thickness
+        self.sidewallAngle = sidewall_angle
+        self.etch_depth = etch_depth
+        self.base = base
+        self.core = core
+        self.cladding = cladding
+        self.rc = rc
+        self.sidewall_angle=sidewall_angle
+
+        self._compute_vertices()
+    
+    def _compute_vertices(self):
+
+        # calculate length of bottom face based on the sidewall angle
+        self.bottom_face = self.width + 2 * (self.etch_depth / np.tan(self.sidewall_angle))
+
+        self.X1 = self.centerX - self.width/2
+        self.X2 = self.centerX + self.width/2
+        self.X3 = self.centerX + self.bottom_face/2
+        self.X4 = self.centerX + self.base/2
+        self.X5 = self.X4
+        self.X6 = self.centerX - self.base/2
+        self.X7 = self.X6
+        self.X8 = self.centerX - self.bottom_face/2
+        
+        self.Y1 = self.centerY + self.thickness / 2
+        self.Y2 = self.Y1
+        self.Y3 = self.Y1 - self.etch_depth
+        self.Y4 = self.Y3
+        self.Y5 = self.centerY - self.thickness / 2
+        self.Y6 = self.Y5
+        self.Y7 = self.Y3
+        self.Y8 = self.Y7
+
+    def writeContents(self, wavelength):
+        """Return a string defining the trapezoid in the way understood by WGMS3D.
+
+        Returns:
+            (str): string representation of trapezoid object.
+        """
+        lines = [
+            [[self.X1, self.Y1], [self.X2, self.Y2]],
+            [[self.X2, self.Y2], [self.X3, self.Y3]],
+            [[self.X3, self.Y3], [self.X4, self.Y4]],
+            #[[self.X4, self.Y4], [self.X5, self.Y5]],
+            [[self.X5, self.Y5], [self.X6, self.Y6]],
+            #[[self.X6, self.Y6], [self.X7, self.Y7]],
+            [[self.X7, self.Y7], [self.X8, self.Y8]],
+            [[self.X8, self.Y8], [self.X1, self.Y1]]
+        ]
+
+        if self.rc > 0:
+            raise ValueError('rounded corners not supported for rib waveguides yet')
+
+        # corners = [
+        #     [[], [], []],  # top left
+        #     [[], [], []],  # bottom left
+        #     [[], [], []],  # top right
+        #     [[], [], []]  # bottom right
+        # ]
+
+        cladding = self.cladding.get_n(1 / wavelength)
+        core = self.core.get_n(1 / wavelength)
+        indices = [
+            [cladding, core]
+        ]*8
+
+        fileContents = ""
+
+        for k, line in enumerate(lines):
+            X1 = line[0][0]
+            Y1 = line[0][1]
+            X2 = line[1][0]
+            Y2 = line[1][1]
+            nLeft = indices[k][0]
+            nRight = indices[k][1]
+            currentLine = "l ({:e},{:e}) ({:e},{:e}) {:e} {:e} {:e} {:e}\n".format(
+                nLeft.real, nLeft.imag, nRight.real, nRight.imag, X1, Y1, X2, Y2
+            )
+            fileContents += (currentLine)
+
+        # TODO: Enable rounded corners
+
+        return fileContents
 # --------------------------------------------------------------------- #
 # Material Classes
 # --------------------------------------------------------------------- #

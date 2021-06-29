@@ -10,6 +10,41 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pyMode as pm
+import pickle
+
+# --------------------------------------------------------------------- #
+# Data structures
+# --------------------------------------------------------------------- #
+
+class Mode():
+    def __init__(self,Er,Ez,Ep,Hr,Hz,Hp,k,wavelength,radius):
+        self.Er = np.squeeze(Er)
+        self.Ez = np.squeeze(Ez)
+        self.Ep = np.squeeze(Ep)
+        self.Hr = np.squeeze(Hr)
+        self.Hz = np.squeeze(Hz)
+        self.Hp = np.squeeze(Hp)
+        self.k = k
+        self.wavelength = wavelength
+        self.radius=radius
+
+        self.neff = self.wavelength * self.k / (2*np.pi)
+        self.loss_um = np.imag(self.neff)*4*np.pi*4.34/self.wavelength
+        self.loss_cm = self.loss_um*1e4
+        self.loss_90 = self.loss_um * (2*np.pi*self.radius*0.25)
+        self.Q = 2*np.pi/np.imag(self.neff)
+    
+    def save_mode(self,filename):
+        with open(filename, 'wb') as f:
+            pickle.dump(self,f)
+    
+    @classmethod
+    def load(cls, filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+    
+    def get_intensity(self):
+        return self.Er**2+self.Ep**2+self.Ez**2
 
 
 # --------------------------------------------------------------------- #
@@ -20,7 +55,7 @@ import pyMode as pm
 class Simulation:
     """Class defining parameters for a simulation with WGMS3D, as well as methods for accessing results."""
     def __init__(self, geometry, wavelength, numModes, xGrid, yGrid, radius=0, eigStart=None, boundaries=None,
-                 background=pm.AIR, filenamePrefix='', folderName=''):
+                 background=pm.AIR, filenamePrefix='', folderName='',nprocs=None):
         # initialize all variables
         self.simRun = False
         self.geometry = geometry
@@ -32,6 +67,7 @@ class Simulation:
         self.eigStart = eigStart
         self.boundaries = [] if boundaries is None else boundaries
         self.background = background
+        self.nprocs=nprocs
 
         self.filenamePrefix = filenamePrefix
         self.geomFileName = None
@@ -52,10 +88,16 @@ class Simulation:
         self.writeGeometry()
 
         # formulate the shell command
-        if self.folderName is "":
-            command = "wgms3d"
+        if self.folderName == "":
+            command = ""
         else:
-            command = "cd " + self.folderName + " && wgms3d"
+            command = "cd " + self.folderName + " && "
+        
+        # add in mpi
+        if self.nprocs is not None:
+            command += "mpirun -np {} wgms3d".format(int(self.nprocs))
+        else:
+            command += "wgms3d"
 
         # add radius of curvature
         if self.radius:
@@ -124,58 +166,41 @@ class Simulation:
         """Return all six fields for each mode.
 
         Returns:
-            (np.ndarray): wave numbers for each mode.
-            (np.ndarray): the field profile for H over r.
-            (np.ndarray): the field profile for H over z.
-            (np.ndarray): the field profile for H over phi.
-            (np.ndarray): the field profile for E over r.
-            (np.ndarray): the field profile for E over z.
-            (np.ndarray): the field profile for E over phi.
+            (list of scalars): waveNumbers
+            (list of Fields): Field objects
         """
         if not self.simRun:
             raise ValueError('you must run a simulation first')
 
         waveNumbers = np.zeros((self.numModes,), dtype=np.complex128)
 
-        Hr = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
-        Hz = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
-        Hphi = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
-
-        Er = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
-        Ez = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
-        Ephi = np.zeros((self.numModes, self.xGrid.size, self.yGrid.size), dtype=np.complex128)
-
-        k0_modes = np.zeros((self.numModes,), dtype=np.complex128)
+        mode_fields = []
 
         for mode_iter in range(self.numModes):
             modeNumber = mode_iter
+
             # Record data for Hr
-            k0, data = self.getFieldComponent('hr', modeNumber)
+            k0, Hr = self.getFieldComponent('hr', modeNumber)
             waveNumbers[mode_iter] = k0
-            Hr[mode_iter] = data.T
 
             # Record data for Hz
-            k0, data = self.getFieldComponent('hz', modeNumber)
-            Hz[mode_iter] = data.T
+            k0, Hz = self.getFieldComponent('hz', modeNumber)
 
             # Record data for Hphi
-            k0, data = self.getFieldComponent('hp', modeNumber)
-            Hphi[mode_iter] = data.T
+            k0, Hphi = self.getFieldComponent('hp', modeNumber)
 
             # Record data for Er
-            k0, data = self.getFieldComponent('er', modeNumber)
-            Er[mode_iter] = data.T
+            k0, Er = self.getFieldComponent('er', modeNumber)
 
             # Record data for Ez
-            k0, data = self.getFieldComponent('ez', modeNumber)
-            Ez[mode_iter] = data.T
+            k0, Ez = self.getFieldComponent('ez', modeNumber)
 
             # Record data for Ephi
-            k0, data = self.getFieldComponent('ep', modeNumber)
-            Ephi[mode_iter] = data.T
-            k0_modes[mode_iter] = k0
+            k0, Ephi = self.getFieldComponent('ep', modeNumber)
 
-        return waveNumbers, Hr, Hz, Hphi, Er, Ez, Ephi
+            mode_fields.append(Mode(Er, Ez, Ephi, Hr, Hz, Hphi, k0, self.wavelength, self.radius))
+        
+        return waveNumbers, mode_fields
 
     def getEps(self):
         """Get the eps (the geometry) for the simulation.
@@ -249,7 +274,7 @@ class Simulation:
         else:
             plt.imshow(np.real(eps), cmap='binary')
 
-    def plotFields(self,modeNum=1,showGeometry=False):
+    def plotFields(self,modeNum=1,showGeometry=False,res=20):
         """Plots each of the field components. (Not necessarily to scale due to variability in slicing grid)
 
         Args:
@@ -263,13 +288,17 @@ class Simulation:
         if modeNum > self.numModes:
             raise ValueError("That mode hasn't been solved for")
 
+        from scipy import interpolate
+
         fields = self.getFields()
         # Plot the fields
-        #titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
-        titles = ['$H_x$','$H_y$','$H_z$','$E_x$','$E_y$','$E_z$']
+        titles = ['$H_r$','$H_z$','$H_{phi}$','$E_r$','$E_z$','$E_{phi}$']
+        #titles = ['$H_x$','$H_y$','$H_z$','$E_x$','$E_y$','$E_z$']
         if showGeometry:
             eps = self.getEps()
-
+        
+        xnew = np.arange(self.xGrid[0],self.xGrid[-1],1/res)
+        ynew = np.arange(self.yGrid[0],self.yGrid[-1],1/res)
         for k in range(6):
             #plt them, assuring that 0 is the middle value
             if self.numModes == 1:
@@ -279,12 +308,16 @@ class Simulation:
             plt.subplot(2, 3, k+1, adjustable='box', aspect=temp_field.shape[0] / temp_field.shape[1])
 
             v = max( abs(temp_field.min()), abs(temp_field.max()) )
-            plt.imshow(temp_field, cmap='RdBu', vmin=-v, vmax=v)
+
+            f = interpolate.interp2d(self.xGrid, self.yGrid, np.flipud(temp_field), kind='cubic')
+            
+            plt.imshow(f(xnew,ynew), cmap='RdBu', vmin=-v, vmax=v)
             plt.colorbar(fraction=0.046, pad=0.04)
             plt.axis('off')
             plt.title(titles[k])
+            f = interpolate.interp2d(self.xGrid, self.yGrid, np.flipud(np.real(eps)), kind='cubic')
             if showGeometry:
-                plt.imshow(np.real(eps), cmap='binary', alpha=0.2)
+                plt.imshow(f(xnew,ynew), cmap='binary', alpha=0.2)
 
         plt.tight_layout(pad=0.2)
 
@@ -333,3 +366,41 @@ class PML(Boundaries):
         """Return the flag syntax to specify the boundary condition to WGMS3D."""
         command = " -P {}:{}:{}".format(self.location.value, self.thickness, self.strength)
         return command
+
+# --------------------------------------------------------------------- #
+# Utility routines
+# --------------------------------------------------------------------- #
+
+def inner_product(mode1,mode2,xgrid,ygrid):
+    '''\int{E_1 \cross H^*_2 \dot dS}'''
+    product = mode1.Er * np.conj(mode2.Hz) - mode1.Ez * np.conj(mode2.Hr)
+    return np.trapz(np.trapz(product,xgrid,axis=1),ygrid)
+
+def overlap_integral(mode1,mode2,xgrid,ygrid):
+    prod1 = inner_product(mode1,mode2,xgrid,ygrid)
+    prod2 = inner_product(mode2,mode1,xgrid,ygrid)
+    norm1 = inner_product(mode1,mode1,xgrid,ygrid)
+    norm2 = inner_product(mode2,mode2,xgrid,ygrid)
+    return np.real(prod1*prod2/norm1)/np.real(norm2)
+
+def fresnel_transmission(mode1,mode2):
+    n1 = mode1.neff
+    n2 = mode2.neff
+    T = 1-np.abs((n1-n2)/(n1+n2))**2
+    print("T, {}".format(T))
+    return T
+
+def power_coupling(mode1,mode2,xgrid,ygrid):
+    overlap = overlap_integral(mode1,mode2,xgrid,ygrid)
+    fresnel = fresnel_transmission(mode1,mode2)
+    loss = overlap * fresnel
+    loss_db = -10*np.log10(loss)
+    return loss_db
+
+def makeGrid(xs,hs):
+    grid = [min(xs)]
+    interp = interp1d(xs, hs, kind='linear')
+    while grid[-1] < max(xs):
+        h = interp(grid[-1])
+        grid.append(grid[-1] + h)
+    return np.array(grid)
